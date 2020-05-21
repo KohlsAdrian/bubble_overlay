@@ -28,7 +28,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
-                android:text="Código de linha"
                 android:textAppearance="@android:style/TextAppearance"
                 tools:ignore="ContentDescription" />
 
@@ -71,7 +70,6 @@
                         android:layout_gravity="center"
                         android:layout_margin="10dp"
                         android:gravity="center"
-                        android:text="Agora"
                         android:textAppearance="@android:style/TextAppearance.Large"
                         tools:ignore="ContentDescription" />
 
@@ -81,7 +79,6 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:gravity="center"
-                        android:text="Prefixo"
                         android:textAppearance="@android:style/TextAppearance"
                         tools:ignore="ContentDescription" />
                 </LinearLayout>
@@ -89,7 +86,6 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!--Close button-->
     <ImageButton
         android:id="@+id/bubble_close"
         android:layout_width="40dp"
