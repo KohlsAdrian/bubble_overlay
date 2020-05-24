@@ -57,13 +57,11 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     if (textColor != null)
                         mOverlayService.updateTextColor(textColor)
                     if (bottomColor != null)
-                        mOverlayService.updateTextColor(bottomColor)
+                        mOverlayService.updateBottomTextColor(bottomColor)
                     if (backgroundColor != null)
                         mOverlayService.updateBubbleColor(backgroundColor)
-                    if (topIconAsset != null)
-                        mOverlayService.updateIconTop(topIconAsset)
-                    if (bottomIconAsset != null)
-                        mOverlayService.updateIconBottom(bottomIconAsset)
+                    mOverlayService.updateIconTop(topIconAsset)
+                    mOverlayService.updateIconBottom(bottomIconAsset)
                 }
             }
 

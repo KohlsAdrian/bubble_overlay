@@ -1,14 +1,11 @@
-# bubble_overlay
-
 Android only feature
+This plugin is very start project
 
 ## Getting Started
 
-This plugin is very start project
-
 What you need to include in your project to start working:
 
-* Open your AndroidManifest.xml and add inside <application> tag:
+* Open your AndroidManifest.xml and add inside <application> tag add this:
 
         <service
             android:name="com.adriankohls.bubble_overlay.BubbleOverlayService"
@@ -18,90 +15,17 @@ What you need to include in your project to start working:
 Create a local variable:
     
     final BubbleOverlay bubbleOverlay = BubbleOverlay();
+    bubbleOverlay.openBubble();
 
-First open the bubble passing all first option parameters (null if all empty):
-Order: Center Text, Text Color, Bubble Color, top image, bottom image
+The first time you call openBubble(), it will request Android overlay permission
+After granting permission, call it again, and it will open the bubble
 
-    bubbleOverlay.openBubble(null, '#000000', '#ffffff', null, null);
+More details you can find in example/lib/main.dart
 
-How to use in Flutter:
-You can call single functions to change Text, Colors and images
+## How it works
 
-    class _Home extends State<Home> {
-      final BubbleOverlay bubbleOverlay = BubbleOverlay();
-      int time = 0;
-      bool alternateColor = false;
-      Timer timer;
-    
-      void updateTextCounter() {
-        timer?.cancel();
-        time = 0;
-        timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
-          time++;
-          if (bubbleOverlay.isOpened) bubbleOverlay.updateBubbleText('$time');
-        });
-      }
-    
-      void updateTextHelloWorld() {
-        timer?.cancel();
-        if (bubbleOverlay.isOpened) bubbleOverlay.updateBubbleText('Hello World');
-      }
-    
-      void closeBubble() {
-        timer?.cancel();
-        if (bubbleOverlay.isOpened) bubbleOverlay.closeBubble();
-      }
-    
-      void updateTextAndBgColor() {
-        if (bubbleOverlay.isOpened) {
-          bubbleOverlay.updateBubbleColor(alternateColor ? '#ffffff' : '#000000');
-          bubbleOverlay.updateTextColor(alternateColor ? '#000000' : '#ffffff');
-          alternateColor = !alternateColor;
-        }
-      }
-    
-      @override
-      Widget build(BuildContext context) {
-        return Scaffold(
-          appBar: AppBar(title: Text('Bubble Overlay')),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                RaisedButton(
-                  child: Text('Open Bubble Overlay'),
-                  onPressed: () {
-                    bubbleOverlay.openBubble(
-                      null,
-                      '#000000',
-                      '#ffffff',
-                      null,
-                      null,
-                    );
-                  },
-                ),
-                RaisedButton(
-                  onPressed: closeBubble,
-                  child: Text('Close Bubble'),
-                ),
-                RaisedButton(
-                  onPressed: updateTextHelloWorld,
-                  child: Text('Set "Hello World"'),
-                ),
-                RaisedButton(
-                  onPressed: updateTextCounter,
-                  child: Text('Update text counter'),
-                ),
-                RaisedButton(
-                  onPressed: updateTextAndBgColor,
-                  child: Text('Update text and background color'),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    }
+BubbleOverlayPlugin.kt:
+    Make the 'talk' with Dart/Flutter with native Android OS, connect the OS with the Service, etc.
 
-
+BubbleOverlayService.kt
+    Updates Bubble data, all bubble data is parsed from XML file (layout_bubble.xml), as developing a native app for Android with XML

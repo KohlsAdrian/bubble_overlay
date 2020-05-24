@@ -2,10 +2,8 @@ package com.adriankohls.bubble_overlay
 
 import android.annotation.SuppressLint
 import android.app.Service
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Binder
@@ -63,17 +61,20 @@ class BubbleOverlayService : Service() {
         textView?.setTextColor(Color.parseColor(color))
     }
 
-    fun updateIconTop(icon: ByteArray) {
+    fun updateIconTop(icon: ByteArray?) {
         val iconTop = mBubbleView?.findViewById<ImageView>(R.id.bubble_image_top)
-        if (iconTop != null)
+        if (iconTop != null && icon != null)
             Glide.with(this).load(icon).into(iconTop)
+        else
+            iconTop?.setImageResource(0)
     }
 
-    fun updateIconBottom(icon: ByteArray) {
+    fun updateIconBottom(icon: ByteArray?) {
         val iconBottom = mBubbleView?.findViewById<ImageView>(R.id.bubble_image_bottom)
-
-        if (iconBottom != null)
+        if (iconBottom != null && icon != null)
             Glide.with(this).load(icon).into(iconBottom)
+        else
+            iconBottom?.setImageResource(0)
     }
 
     fun updateBubbleColor(color: String) {
@@ -122,10 +123,11 @@ class BubbleOverlayService : Service() {
         mWindowManager?.addView(mBubbleView, params)
 
         //Set the close button.
-        val closeButton = mBubbleView?.findViewById<ImageButton>(R.id.bubble_close)
+        val closeButton = mBubbleView?.findViewById<View>(R.id.bubble_close)
         closeButton?.setOnClickListener { //
             stopSelf()
         }
+
         val card = mBubbleView?.findViewById<CardView>(R.id.card)
         card?.setOnTouchListener(
                 object : OnTouchListener {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bubble_overlay/bubble_overlay.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   runApp(MaterialApp(home: Home()));
@@ -13,90 +14,125 @@ class Home extends StatefulWidget {
 
 class _Home extends State<Home> {
   final BubbleOverlay bubbleOverlay = BubbleOverlay();
-  int time = 0;
   bool alternateColor = false;
-  Timer timer;
 
-  void updateTextCounter() {
-    timer?.cancel();
-    time = 0;
-    timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
-      time++;
-      if (bubbleOverlay.isOpened) bubbleOverlay.updateText('$time');
-    });
+  void setMiddleTextCounter() {
+    int time = 0;
+    if (bubbleOverlay.serviceCreated)
+      bubbleOverlay
+          .setCallback(Timer.periodic(Duration(milliseconds: 500), (timer) {
+        time++;
+        if (bubbleOverlay.serviceCreated)
+          bubbleOverlay.updateMiddleText('$time');
+      }));
   }
 
-  void updateTextHelloWorld() {
-    timer?.cancel();
-    if (bubbleOverlay.isOpened) bubbleOverlay.updateText('Hello World');
+  void setBottomTextHelloWorld() {
+    if (bubbleOverlay.serviceCreated) {
+      bubbleOverlay.removeCallback();
+      bubbleOverlay.updateBottomText('Hello World');
+    }
   }
 
   void closeBubble() {
-    timer?.cancel();
-    if (bubbleOverlay.isOpened) bubbleOverlay.closeBubble();
+    if (bubbleOverlay.serviceCreated) {
+      bubbleOverlay.removeCallback();
+      bubbleOverlay.closeBubble();
+    }
   }
 
   void updateTextAndBgColor() {
-    if (bubbleOverlay.isOpened) {
+    if (bubbleOverlay.serviceCreated) {
+      bubbleOverlay.removeCallback();
       String textColor = alternateColor ? '#000000' : '#ffffff';
       String bgColor = alternateColor ? '#ffffff' : '#000000';
-      bubbleOverlay.updateTextColor(textColor);
-      bubbleOverlay.updateTitleColor(textColor);
+      bubbleOverlay.updateMiddleTextColor(textColor);
+      bubbleOverlay.updateTopTextColor(textColor);
       bubbleOverlay.updateBottomTextColor(textColor);
-      bubbleOverlay.updateColor(bgColor);
+      bubbleOverlay.updateBackgroundColor(bgColor);
       alternateColor = !alternateColor;
     }
   }
 
-  void updateTitle() {
-    bubbleOverlay.updateTitle('Set Bubble Title');
+  void setTopText() {
+    if (bubbleOverlay.serviceCreated) {
+      bubbleOverlay.removeCallback();
+      bubbleOverlay.updateTopText('Set Bubble Title');
+    }
+  }
+
+  void setTopIcon() async {
+    String url =
+        'https://meterpreter.org/wp-content/uploads/2018/09/flutter.png';
+    http.get(url).then((response) {
+      if (response != null)
+        bubbleOverlay.updateTopIconWithBytes(response.bodyBytes);
+    });
+  }
+
+  void setBottomIcon() async {
+    String url =
+        'https://github.githubassets.com/images/modules/open_graph/github-mark.png';
+    http.get(url).then((response) {
+      if (response != null)
+        bubbleOverlay.updateBottomIconWithBytes(response.bodyBytes);
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Bubble Overlay')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            RaisedButton(
-                child: Text('Open Bubble Overlay'),
-                onPressed: () => bubbleOverlay.openBubble(
-                  'Bubble Overlay!',
-                  'Bubble Opened',
-                  'Bottom Text',
-                  '#000000',
-                  '#000000',
-                  '#000000',
-                  '#ffffff',
-                  null,
-                  null,
-                )),
-            RaisedButton(
-              onPressed: closeBubble,
-              child: Text('Close Bubble'),
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text('Bubble Overlay')),
+        body: Center(
+          child: Container(
+            padding: EdgeInsets.all(50),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    RaisedButton(
+                        child: Text('Open Bubble Overlay'),
+                        onPressed: () => bubbleOverlay.openBubble()),
+                    RaisedButton(
+                      onPressed: closeBubble,
+                      child: Text('Close Bubble'),
+                    ),
+                  ],
+                ),
+                RaisedButton(
+                  onPressed: setTopText,
+                  child: Text('Set Bubble Top Text'),
+                ),
+                RaisedButton(
+                  onPressed: setMiddleTextCounter,
+                  child: Text('Set Middle Text Counter'),
+                ),
+                RaisedButton(
+                  onPressed: setBottomTextHelloWorld,
+                  child: Text('Set Bottom Text "Hello World"'),
+                ),
+                RaisedButton(
+                  onPressed: updateTextAndBgColor,
+                  child: Text('Update text and background color'),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    RaisedButton(
+                      child: Text('Set Top Icon'),
+                      onPressed: setTopIcon,
+                    ),
+                    RaisedButton(
+                      child: Text('Set Bottom Icon'),
+                      onPressed: setBottomIcon,
+                    ),
+                  ],
+                ),
+              ],
             ),
-            RaisedButton(
-              onPressed: updateTextHelloWorld,
-              child: Text('Set "Hello World"'),
-            ),
-            RaisedButton(
-              onPressed: updateTextCounter,
-              child: Text('Update text counter'),
-            ),
-            RaisedButton(
-              onPressed: updateTitle,
-              child: Text('Update Bubble Title'),
-            ),
-            RaisedButton(
-              onPressed: updateTextAndBgColor,
-              child: Text('Update text and background color'),
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
