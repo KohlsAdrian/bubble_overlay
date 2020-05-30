@@ -1,18 +1,6 @@
-## 0.0.1+0
-## 0.0.1+1
-## 0.0.1+2
-## 0.0.1+3
-## 0.0.1+4
-## 0.0.1+5
-## 0.0.1+6
+## 0.0.4
 
-* Initial release.
-
-## 0.0.2
-
-* Removed close bubble on tapping on bubble, close bubble overlay only tapping on X
-* Added top and bottom text to bubble
-* Fixed title, middle and bottom text size
+Added iOS project folder to make plugin runnable in Flutter project for Android and iOS. Remember, this plugin only works for Android platform
 
 ## 0.0.3
 
@@ -23,3 +11,18 @@
 * Added Timer callback, for custom inside bubble functions
 * Fixed some access to object
 
+## 0.0.2
+
+* Removed close bubble on tapping on bubble, close bubble overlay only tapping on X
+* Added top and bottom text to bubble
+* Fixed title, middle and bottom text size
+
+## 0.0.1+0
+## 0.0.1+1
+## 0.0.1+2
+## 0.0.1+3
+## 0.0.1+4
+## 0.0.1+5
+## 0.0.1+6
+
+* Initial release.

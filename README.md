@@ -12,6 +12,10 @@ What you need to include in your project to start working:
             android:enabled="true"
             android:exported="false" />
 
+And add this permissions:
+        <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+        <uses-permission android:name="android.permission.WAKE_LOCK" />
+
 Create a local variable:
     
     final BubbleOverlay bubbleOverlay = BubbleOverlay();

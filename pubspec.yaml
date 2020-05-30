@@ -1,6 +1,6 @@
 name: bubble_overlay
 description: An Android overlay feature for Flutter. If you want to show some information of your app in Android platform, you can edit text, image, color. Future features with requests.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/KohlsAdrian/bubble_overlay
 
 environment:
@@ -19,4 +19,6 @@ flutter:
     platforms:
       android:
         package: com.adriankohls.bubble_overlay
+        pluginClass: BubbleOverlayPlugin
+      ios:
         pluginClass: BubbleOverlayPlugin
