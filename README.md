@@ -1,28 +1,28 @@
 Android only feature
-This plugin is very start project
 
 ## Getting Started
 
 What you need to include in your project to start working:
 
-* Open your AndroidManifest.xml and add inside <application> tag add this:
+* Open your AndroidManifest.xml and add inside `application` tag:
 
         <service
             android:name="com.adriankohls.bubble_overlay.BubbleOverlayService"
             android:enabled="true"
             android:exported="false" />
 
-And add this permissions:
+And add this permissions at `manifest` top level:
     
         <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
         <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-Create a local variable:
+Create a local variable in your `dart` file:
     
-    final BubbleOverlay bubbleOverlay = BubbleOverlay();
-    bubbleOverlay.openBubble();
+        final BubbleOverlay bubbleOverlay = BubbleOverlay();
+        bubbleOverlay.openBubble();
 
 The first time you call openBubble(), it will request Android overlay permission
+
 After granting permission, call it again, and it will open the bubble
 
 More details you can find in example/lib/main.dart
