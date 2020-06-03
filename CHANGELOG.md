@@ -1,3 +1,7 @@
+## 0.1.0+1
+
+Flutter format
+
 ## 0.1.0
 
 Fixed isOpen behaviour by checking if Android Service class is running periodically (1 second)

@@ -55,7 +55,8 @@ class BubbleOverlay {
       bytesBottom,
     ]);
     setCallback(callback);
-    ///Creates [_timer] to check periodically if 
+
+    ///Creates [_timer] to check periodically if
     ///bubble [isOpen] if Service is bounded, [true] if bounded,
     ///[false] otherwise
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
