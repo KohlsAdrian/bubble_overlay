@@ -1,3 +1,12 @@
+## 0.1.0
+
+Fixed isOpen behaviour by checking if Android Service class is running periodically (1 second)
+Added callback, and close with proper dispose to avoid memory leak
+
+## 0.0.4+1
+
+Fixed Readme
+
 ## 0.0.4
 
 Added iOS project folder to make plugin runnable in Flutter project for Android and iOS. Remember, this plugin only works for Android platform
