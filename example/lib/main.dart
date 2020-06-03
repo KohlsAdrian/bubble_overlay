@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bubble_overlay/bubble_overlay.dart';
 import 'package:flutter/material.dart';
@@ -18,31 +19,30 @@ class _Home extends State<Home> {
 
   void setMiddleTextCounter() {
     int time = 0;
-    if (bubbleOverlay.serviceCreated)
+    if (bubbleOverlay.isOpen)
       bubbleOverlay
           .setCallback(Timer.periodic(Duration(milliseconds: 500), (timer) {
         time++;
-        if (bubbleOverlay.serviceCreated)
-          bubbleOverlay.updateMiddleText('$time');
+        if (bubbleOverlay.isOpen) bubbleOverlay.updateMiddleText('$time');
+        log('callback');
       }));
   }
 
   void setBottomTextHelloWorld() {
-    if (bubbleOverlay.serviceCreated) {
+    if (bubbleOverlay.isOpen) {
       bubbleOverlay.removeCallback();
       bubbleOverlay.updateBottomText('Hello World');
     }
   }
 
   void closeBubble() {
-    if (bubbleOverlay.serviceCreated) {
-      bubbleOverlay.removeCallback();
+    if (bubbleOverlay.isOpen) {
       bubbleOverlay.closeBubble();
     }
   }
 
   void updateTextAndBgColor() {
-    if (bubbleOverlay.serviceCreated) {
+    if (bubbleOverlay.isOpen) {
       bubbleOverlay.removeCallback();
       String textColor = alternateColor ? '#000000' : '#ffffff';
       String bgColor = alternateColor ? '#ffffff' : '#000000';
@@ -55,7 +55,7 @@ class _Home extends State<Home> {
   }
 
   void setTopText() {
-    if (bubbleOverlay.serviceCreated) {
+    if (bubbleOverlay.isOpen) {
       bubbleOverlay.removeCallback();
       bubbleOverlay.updateTopText('Set Bubble Title');
     }

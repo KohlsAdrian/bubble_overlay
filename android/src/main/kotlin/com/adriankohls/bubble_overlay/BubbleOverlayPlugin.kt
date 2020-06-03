@@ -87,6 +87,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     activity.moveTaskToBack(true)
                 }
             }
+            "isBubbleOpen" -> result.success(mBound)
             "closeBubble" -> {
                 if (mBound)
                     mOverlayService.stopSelf()

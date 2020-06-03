@@ -5,10 +5,11 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 
 class BubbleOverlay {
-  bool _serviceCreated = false;
+  bool _isOpen = false;
   Timer _callback;
+  Timer _timer;
 
-  bool get serviceCreated => _serviceCreated;
+  bool get isOpen => _isOpen;
   Timer get callback => _callback;
 
   BubbleOverlay() {
@@ -23,7 +24,7 @@ class BubbleOverlay {
   ///Start Bubble service and show the bubble, hiding the app, with optional
   ///[topText], [middleText], [bottomText],
   ///[topTextColor], [middleTextColor], [bottomTextColor],
-  ///[backgroundColor], [topIconAsset] and [bottomIconAsset]
+  ///[backgroundColor], [topIconAsset], [bottomIconAsset] and [callback]
   void openBubble({
     String topText = '',
     String middleText = '',
@@ -53,19 +54,25 @@ class BubbleOverlay {
       bytesTop,
       bytesBottom,
     ]);
-    _serviceCreated = true;
     setCallback(callback);
+    ///Creates [_timer] to check periodically if 
+    ///bubble [isOpen] if Service is bounded, [true] if bounded,
+    ///[false] otherwise
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      _isOpen = await _platform.invokeMethod('isBubbleOpen') ?? false;
+      if (!_isOpen) {
+        timer.cancel();
+      }
+    });
   }
 
   ///Add custom service inside bubble, usually used for
   ///Timer.peridoc automated calls
-  void setCallback(Timer callback) => _serviceCreated
-      ? _callback = callback
-      : throw Exception('Bubble not running');
+  void setCallback(Timer callback) => _callback = callback;
 
   ///Removes custom service inside bubble
   void removeCallback() {
-    if (_serviceCreated) {
+    if (_isOpen) {
       _callback?.cancel();
       _callback = null;
     } else
@@ -74,17 +81,18 @@ class BubbleOverlay {
 
   ///Stop Bubble service and close the bubble
   void closeBubble() {
-    if (_serviceCreated) {
+    if (_isOpen) {
       removeCallback();
       _platform.invokeMethod('closeBubble');
-      _serviceCreated = false;
+      _timer.cancel();
+      _isOpen = false;
     } else
       throw Exception('Bubble not running');
   }
 
   ///Updates bubble [topIcon] with String asset image
   Future<void> updateTopIcon(String assetImage) async {
-    if (_serviceCreated) {
+    if (_isOpen) {
       var bytes = (await rootBundle.load(assetImage)).buffer.asUint8List();
       _platform.invokeMethod('updateBubbleTopIcon', bytes);
     } else
@@ -93,7 +101,7 @@ class BubbleOverlay {
 
   ///Updates bubble [bottomIcon] with String asset image
   Future<void> updateBottomIcon(String assetImage) async {
-    if (_serviceCreated) {
+    if (_isOpen) {
       var bytes = (await rootBundle.load(assetImage)).buffer.asUint8List();
       _platform.invokeMethod('updateBubbleBottomIcon', bytes);
     } else
@@ -101,48 +109,47 @@ class BubbleOverlay {
   }
 
   ///Updates bubble [topIcon] with bytes
-  Future<void> updateTopIconWithBytes(Uint8List bytes) async => !_serviceCreated
+  Future<void> updateTopIconWithBytes(Uint8List bytes) async => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleTopIcon', bytes);
 
   ///Updates bubble [bottomIcon] with bytes
-  Future<void> updateBottomIconWithBytes(Uint8List bytes) async =>
-      !_serviceCreated
-          ? throw Exception('Bubble not running')
-          : _platform.invokeMethod('updateBubbleBottomIcon', bytes);
+  Future<void> updateBottomIconWithBytes(Uint8List bytes) async => !_isOpen
+      ? throw Exception('Bubble not running')
+      : _platform.invokeMethod('updateBubbleBottomIcon', bytes);
 
   ///Updates bubble [topText]
-  void updateTopText(String text) => !_serviceCreated
+  void updateTopText(String text) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleTitle', text);
 
   ///Updates bubble [topTextColor]
-  void updateTopTextColor(String text) => !_serviceCreated
+  void updateTopTextColor(String text) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleTitleColor', text);
 
   ///Updates bubble [middleText]
-  void updateMiddleText(String text) => !_serviceCreated
+  void updateMiddleText(String text) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleText', text);
 
   ///Updates bubble [middleTextColor]
-  void updateMiddleTextColor(String textColor) => !_serviceCreated
+  void updateMiddleTextColor(String textColor) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleTextColor', textColor);
 
   ///Updates bubble [bottomText]
-  void updateBottomText(String text) => !_serviceCreated
+  void updateBottomText(String text) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleBottomText', text);
 
   ///Updates bubble [bottomTextColor]
-  void updateBottomTextColor(String text) => !_serviceCreated
+  void updateBottomTextColor(String text) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleBottomTextColor', text);
 
   ///Updates bubble [backgroundColor]
-  void updateBackgroundColor(String bubbleColor) => !_serviceCreated
+  void updateBackgroundColor(String bubbleColor) => !_isOpen
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleColor', bubbleColor);
 }
