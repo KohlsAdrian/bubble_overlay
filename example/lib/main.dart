@@ -82,56 +82,44 @@ class _Home extends State<Home> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text('Bubble Overlay')),
-        body: Center(
-          child: Container(
-            padding: EdgeInsets.all(50),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    RaisedButton(
-                        child: Text('Open Bubble Overlay'),
-                        onPressed: () => bubbleOverlay.openBubble()),
-                    RaisedButton(
-                      onPressed: closeBubble,
-                      child: Text('Close Bubble'),
-                    ),
-                  ],
-                ),
-                RaisedButton(
-                  onPressed: setTopText,
-                  child: Text('Set Bubble Top Text'),
-                ),
-                RaisedButton(
-                  onPressed: setMiddleTextCounter,
-                  child: Text('Set Middle Text Counter'),
-                ),
-                RaisedButton(
-                  onPressed: setBottomTextHelloWorld,
-                  child: Text('Set Bottom Text "Hello World"'),
-                ),
-                RaisedButton(
-                  onPressed: updateTextAndBgColor,
-                  child: Text('Update text and background color'),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    RaisedButton(
-                      child: Text('Set Top Icon'),
-                      onPressed: setTopIcon,
-                    ),
-                    RaisedButton(
-                      child: Text('Set Bottom Icon'),
-                      onPressed: setBottomIcon,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(50),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              RaisedButton(
+                  child: Text('Open Bubble Overlay'),
+                  onPressed: () => bubbleOverlay.openBubble()),
+              RaisedButton(
+                onPressed: closeBubble,
+                child: Text('Close Bubble'),
+              ),
+              RaisedButton(
+                onPressed: setTopText,
+                child: Text('Set Bubble Top Text'),
+              ),
+              RaisedButton(
+                onPressed: setMiddleTextCounter,
+                child: Text('Set Middle Text Counter'),
+              ),
+              RaisedButton(
+                onPressed: setBottomTextHelloWorld,
+                child: Text('Set Bottom Text "Hello World"'),
+              ),
+              RaisedButton(
+                onPressed: updateTextAndBgColor,
+                child: Text('Update text and background color'),
+              ),
+              RaisedButton(
+                child: Text('Set Top Icon'),
+                onPressed: setTopIcon,
+              ),
+              RaisedButton(
+                child: Text('Set Bottom Icon'),
+                onPressed: setBottomIcon,
+              ),
+            ],
           ),
         ),
       );

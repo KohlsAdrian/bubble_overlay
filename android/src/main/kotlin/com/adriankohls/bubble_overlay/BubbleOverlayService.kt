@@ -11,17 +11,15 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.view.*
 import android.view.View.OnTouchListener
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import com.bumptech.glide.Glide
 
-
 class BubbleOverlayService : Service() {
     private var mWindowManager: WindowManager? = null
     private var mBubbleView: View? = null
-    private lateinit var mWakeLock: PowerManager.WakeLock
+    private var mWakeLock: PowerManager.WakeLock? = null
     private var binder = LocalBinder()
     override fun onBind(intent: Intent): IBinder? {
         return binder
@@ -83,7 +81,7 @@ class BubbleOverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mWakeLock.acquire() //battery hog
+        mWakeLock?.acquire(30 * 60 * 1000L /*30 minutes*/)
         return START_NOT_STICKY
     }
 
@@ -151,12 +149,7 @@ class BubbleOverlayService : Service() {
                                 return true
                             }
                             MotionEvent.ACTION_UP -> {
-                                //As we implemented on touch listener with ACTION_MOVE,
-                                //we have to check if the previous action was ACTION_DOWN
-                                //to identify if the user clicked the view or not.
-                                if (lastAction == MotionEvent.ACTION_DOWN) {
-
-                                }
+                                //if (lastAction == MotionEvent.ACTION_DOWN) { }
                                 lastAction = event.action
                                 return true
                             }
@@ -178,7 +171,7 @@ class BubbleOverlayService : Service() {
     }
 
     override fun onDestroy() {
-        mWakeLock.release()
+        mWakeLock?.release()
         stopForeground(true)
         if (mBubbleView != null) mWindowManager?.removeView(mBubbleView)
         super.onDestroy()

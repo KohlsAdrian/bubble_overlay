@@ -105,7 +105,7 @@
             android:layout_height="30dp"
             android:background="@drawable/circular_bordershape"
             android:src="@drawable/baseline_cancel_black_48dp"
-            android:tint="@android:color/holo_blue_dark"
+            android:tint="@android:color/darker_gray"
             tools:ignore="ContentDescription" />
     </androidx.cardview.widget.CardView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
