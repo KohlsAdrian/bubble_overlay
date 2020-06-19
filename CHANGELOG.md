@@ -1,3 +1,8 @@
+## 0.1.1+0
+
+Fixed nullability crash on some devices due to memory/OS apps GC management
+Added missing resource releasers to avoid memory leak
+
 ## 0.1.0+1
 
 Flutter format

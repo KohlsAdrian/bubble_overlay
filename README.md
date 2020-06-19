@@ -34,3 +34,6 @@ BubbleOverlayPlugin.kt:
 
 BubbleOverlayService.kt
     Updates Bubble data, all bubble data is parsed from XML file (layout_bubble.xml), as developing a native app for Android with XML
+
+## Google Play Demo
+Link: https://play.google.com/store/apps/details?id=com.adriankohls.bubble_overlay_example
