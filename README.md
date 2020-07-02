@@ -1,4 +1,4 @@
-Android only feature
+# Android only feature
 
 ## Getting Started
 
@@ -12,12 +12,12 @@ What you need to include in your project to start working:
             android:exported="false" />
 
 And add this permissions at `manifest` top level:
-    
+
         <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
         <uses-permission android:name="android.permission.WAKE_LOCK" />
 
 Create a local variable in your `dart` file:
-    
+
         final BubbleOverlay bubbleOverlay = BubbleOverlay();
         bubbleOverlay.openBubble();
 
@@ -36,4 +36,5 @@ BubbleOverlayService.kt
     Updates Bubble data, all bubble data is parsed from XML file (layout_bubble.xml), as developing a native app for Android with XML
 
 ## Google Play Demo
-Link: https://play.google.com/store/apps/details?id=com.adriankohls.bubble_overlay_example
+
+Link: <https://play.google.com/store/apps/details?id=com.adriankohls.bubble_overlay_example>

@@ -60,9 +60,9 @@ class BubbleOverlay {
     ///bubble [isOpen] if Service is bounded, [true] if bounded,
     ///[false] otherwise
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      _isOpen = await _platform.invokeMethod('isBubbleOpen') ?? false;
+      _isOpen = await _platform?.invokeMethod('isBubbleOpen') ?? false;
       if (!_isOpen) {
-        timer.cancel();
+        timer?.cancel();
       }
     });
   }

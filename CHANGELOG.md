@@ -1,4 +1,10 @@
-## 0.1.1+0
+# Changelog
+
+## 0.1.1+1
+
+* Fixed 'No implementation found for method isBubbleOpen on channel com.adriankohls/bubble_overlay'
+
+## 0.1.1
 
 Fixed nullability crash on some devices due to memory/OS apps GC management
 Added missing resource releasers to avoid memory leak
@@ -36,11 +42,29 @@ Added iOS project folder to make plugin runnable in Flutter project for Android 
 * Fixed title, middle and bottom text size
 
 ## 0.0.1+0
+
+* Initial release
+
 ## 0.0.1+1
+
+* Initial release
+
 ## 0.0.1+2
+
+* Initial release
+
 ## 0.0.1+3
+
+* Initial release
+
 ## 0.0.1+4
+
+* Initial release
+
 ## 0.0.1+5
+
+* Initial release
+
 ## 0.0.1+6
 
-* Initial release.
+* Initial release
