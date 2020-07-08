@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1+2
+
+* Fixed iOS signing for offline use
+
 ## 0.1.1+1
 
 * Fixed 'No implementation found for method isBubbleOpen on channel com.adriankohls/bubble_overlay'

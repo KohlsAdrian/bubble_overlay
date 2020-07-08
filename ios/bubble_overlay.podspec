@@ -6,12 +6,10 @@ Pod::Spec.new do |s|
   s.name             = 'bubble_overlay'
   s.version          = '0.0.1'
   s.summary          = 'A new flutter plugin project.'
-  s.description      = <<-DESC
-A new flutter plugin project.
-                       DESC
-  s.homepage         = 'http://example.com'
+  s.description      = 'A new flutter plugin project'
+  s.homepage         = 'https://github.com/KohlsAdrian/bubble_overlay'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Adrian Kohls' => 'adriankohls95@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
