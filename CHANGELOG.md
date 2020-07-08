@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1+3
+
+* Fixed iOS signing for offline use
+
 ## 0.1.1+2
 
 * Fixed iOS signing for offline use
