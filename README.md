@@ -10,6 +10,10 @@ What you need to include in your project to start working:
             android:name="com.adriankohls.bubble_overlay.BubbleOverlayService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name="com.adriankohls.BubbleVideoOverlayService.BubbleOverlayService"
+            android:enabled="true"
+            android:exported="false" />
 
 And add this permissions at `manifest` top level:
 
@@ -20,8 +24,9 @@ Create a local variable in your `dart` file:
 
         final BubbleOverlay bubbleOverlay = BubbleOverlay();
         bubbleOverlay.openBubble();
+        bubbleOverlay.openVideoBubble(uriString)
 
-The first time you call openBubble(), it will request Android overlay permission
+The first time you call openBubble()/openVideoBubble(), it will request Android overlay permission
 
 After granting permission, call it again, and it will open the bubble
 
@@ -34,6 +39,9 @@ BubbleOverlayPlugin.kt:
 
 BubbleOverlayService.kt
     Updates Bubble data, all bubble data is parsed from XML file (layout_bubble.xml), as developing a native app for Android with XML
+
+BubbleVideoOverlayService.kt
+    Updates Bubble  Video data, all bubble data is parsed from XML file (layout_video_bubble.xml), as developing a native app for Android with XML
 
 ## Google Play Demo
 

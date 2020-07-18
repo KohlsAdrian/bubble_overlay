@@ -79,6 +79,12 @@ class _Home extends State<Home> {
     });
   }
 
+  void openBubbleVideo() async {
+    String url =
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+    bubbleOverlay.openVideoBubble(url);
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text('Bubble Overlay')),
@@ -118,6 +124,10 @@ class _Home extends State<Home> {
               RaisedButton(
                 child: Text('Set Bottom Icon'),
                 onPressed: setBottomIcon,
+              ),
+              RaisedButton(
+                child: Text('Open Bubble Video'),
+                onPressed: openBubbleVideo,
               ),
             ],
           ),

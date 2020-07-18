@@ -22,9 +22,11 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
     private val channelName: String = "com.adriankohls/bubble_overlay"
     private val CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084
     private var mOverlayService: BubbleOverlayService? = null
+    private var mOverlayVideoService: BubbleVideoOverlayService? = null
     private var connection: ServiceConnection? = null
+    private var connectionVideo: ServiceConnection? = null
     private var mBound: Boolean = false
-    private var arguments: List<Any?> = arrayListOf()
+    private var mBoundVideo: Boolean = false
 
 
     private fun connect(call: MethodCall?) {
@@ -36,7 +38,8 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                 mBound = true
 
                 if (call != null)
-                    if (call.method == "openBubble") {
+                    if(call.method == "openBubble"){
+                        val arguments = call.arguments as List<Any?>
 
                         val title: String? = arguments[0] as String?
                         val customText: String? = arguments[1] as String?
@@ -67,14 +70,44 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     }
             }
 
+
+
             override fun onServiceDisconnected(arg0: ComponentName) {
                 mOverlayService?.stopSelf()
                 mBound = false
             }
         }
 
+        connectionVideo = object : ServiceConnection {
+
+            override fun onServiceConnected(className: ComponentName, service: IBinder) {
+                val binder = service as BubbleVideoOverlayService.LocalBinder
+                mOverlayVideoService = binder.getService()
+                mBoundVideo = true
+
+                if (call != null)
+                    if(call.method == "openVideoBubble"){
+                        val arguments = call.arguments as List<Any?>
+                        val data = arguments[0] as String
+                        val uri = Uri.parse(data)
+                        mOverlayVideoService?.setVideo(uri)
+                    }
+            }
+
+
+
+            override fun onServiceDisconnected(arg0: ComponentName) {
+                mOverlayVideoService?.stopSelf()
+                mBoundVideo = false
+            }
+        }
+
         Intent(activity, BubbleOverlayService::class.java).also { intent ->
             if (connection != null) activity?.bindService(intent, connection!!, 0)
+        }
+
+        Intent(activity, BubbleVideoOverlayService::class.java).also { intent ->
+            if (connectionVideo != null) activity?.bindService(intent, connectionVideo!!, 0)
         }
 
     }
@@ -83,6 +116,11 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
         if (connection != null) activity?.unbindService(connection!!)
         mOverlayService?.stopSelf()
         mBound = false
+    }
+    private fun releaseVideo() {
+        if (connectionVideo != null) activity?.unbindService(connectionVideo!!)
+        mOverlayVideoService?.stopSelf()
+        mBoundVideo = false
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -95,12 +133,25 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                             Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")),
                             CODE_DRAW_OVER_OTHER_APP_PERMISSION)
                 } else {
-                    arguments = call.arguments as List<Any?>
                     activity?.startService(
                             Intent(activity, BubbleOverlayService::class.java))
                     activity?.moveTaskToBack(true)
                 }
             }
+            "openVideoBubble" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(activity)) {
+                    val packageName = activity?.packageName
+                    activity?.startActivityForResult(
+                            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")),
+                            CODE_DRAW_OVER_OTHER_APP_PERMISSION)
+                } else {
+                    activity?.startService(
+                            Intent(activity, BubbleVideoOverlayService::class.java))
+                    activity?.moveTaskToBack(true)
+                }
+            }
+            "isVideoBubbleOpen" -> result.success(mBoundVideo)
+            "closeVideoBubble" -> if (mBoundVideo) releaseVideo()
             "isBubbleOpen" -> result.success(mBound)
             "closeBubble" -> if (mBound) release()
             "updateBubbleText" ->
@@ -157,6 +208,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel?.setMethodCallHandler(null)
         release()
+        releaseVideo()
     }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -170,6 +222,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
 
     override fun onDetachedFromActivity() {
         release()
+        releaseVideo()
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -178,5 +231,6 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
 
     override fun onDetachedFromActivityForConfigChanges() {
         release()
+        releaseVideo()
     }
 }

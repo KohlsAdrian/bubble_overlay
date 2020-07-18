@@ -6,10 +6,13 @@ import 'package:flutter/services.dart';
 
 class BubbleOverlay {
   bool _isOpen = false;
+  bool _isVideoOpen = false;
   Timer _callback;
   Timer _timer;
+  Timer _timerVideo;
 
   bool get isOpen => _isOpen;
+  bool get isVideoOpen => _isVideoOpen;
   Timer get callback => _callback;
 
   BubbleOverlay() {
@@ -67,6 +70,22 @@ class BubbleOverlay {
     });
   }
 
+  ///Start Video Bubble service and show the bubble, with optional
+  ///
+  void openVideoBubble(String path) async {
+    _platform.invokeMethod('openVideoBubble', [path]);
+
+    ///Creates [_timerVideo] to check periodically if
+    ///bubble [_isVideoOpen] if Service is bounded, [true] if bounded,
+    ///[false] otherwise
+    _timerVideo = Timer.periodic(Duration(seconds: 1), (timer) async {
+      _isVideoOpen = await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
+      if (!_isVideoOpen) {
+        _timerVideo?.cancel();
+      }
+    });
+  }
+
   ///Add custom service inside bubble, usually used for
   ///Timer.peridoc automated calls
   void setCallback(Timer callback) => _callback = callback;
@@ -89,6 +108,15 @@ class BubbleOverlay {
       _isOpen = false;
     } else
       throw Exception('Bubble not running');
+  }
+  ///Stop Video Bubble service and close the bubble
+  void closeVideoBubble() {
+    if (_isVideoOpen) {
+      _platform.invokeMethod('closeVideoBubble');
+      _timerVideo.cancel();
+      _isVideoOpen = false;
+    } else
+      throw Exception('Bubble Video not running');
   }
 
   ///Updates bubble [topIcon] with String asset image

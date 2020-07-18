@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/bubble_player_view"
+        app:resize_mode="fit"
+        app:use_controller="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        app:cardCornerRadius="30dp">
+
+        <ImageView
+            android:id="@+id/bubble_close"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/circular_bordershape"
+            android:src="@drawable/baseline_cancel_black_48dp"
+            android:tint="@android:color/darker_gray"
+            tools:ignore="ContentDescription" />
+    </androidx.cardview.widget.CardView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

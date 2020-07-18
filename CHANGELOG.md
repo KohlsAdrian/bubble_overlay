@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2+0
+
+* Added video playback support, String Uri parsing
+
 ## 0.1.1+3
 
 * Fixed iOS signing for offline use

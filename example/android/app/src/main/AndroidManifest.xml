@@ -37,5 +37,9 @@
             android:name="com.adriankohls.bubble_overlay.BubbleOverlayService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name="com.adriankohls.bubble_overlay.BubbleVideoOverlayService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 </manifest>
