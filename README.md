@@ -11,7 +11,7 @@ What you need to include in your project to start working:
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name="com.adriankohls.BubbleVideoOverlayService.BubbleOverlayService"
+            android:name="com.adriankohls.bubble_overlay.BubbleVideoOverlayService"
             android:enabled="true"
             android:exported="false" />
 
