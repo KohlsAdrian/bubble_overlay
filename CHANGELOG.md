@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3+0
+
+* Removed unused iOS resources and folder
+* Added local file playback [use openVideoBubbleAsset(assetString)]
+
 ## 0.1.2+0
 
 * Added video playback support, String Uri parsing

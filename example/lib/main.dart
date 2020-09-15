@@ -85,6 +85,11 @@ class _Home extends State<Home> {
     bubbleOverlay.openVideoBubble(url);
   }
 
+  void openBubbleVideoAssets() async {
+    String asset = 'assets/video.mp4';
+    bubbleOverlay.openVideoBubbleAsset(asset);
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text('Bubble Overlay')),
@@ -128,6 +133,10 @@ class _Home extends State<Home> {
               RaisedButton(
                 child: Text('Open Bubble Video'),
                 onPressed: openBubbleVideo,
+              ),
+              RaisedButton(
+                child: Text('Open Bubble Video Assets'),
+                onPressed: openBubbleVideoAssets,
               ),
             ],
           ),

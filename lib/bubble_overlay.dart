@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 
 class BubbleOverlay {
@@ -70,8 +71,7 @@ class BubbleOverlay {
     });
   }
 
-  ///Start Video Bubble service and show the bubble, with optional
-  ///
+  ///Start Video Bubble service and show the bubble
   void openVideoBubble(String path) async {
     _platform.invokeMethod('openVideoBubble', [path]);
 
@@ -79,11 +79,24 @@ class BubbleOverlay {
     ///bubble [_isVideoOpen] if Service is bounded, [true] if bounded,
     ///[false] otherwise
     _timerVideo = Timer.periodic(Duration(seconds: 1), (timer) async {
-      _isVideoOpen = await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
+      _isVideoOpen =
+          await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
       if (!_isVideoOpen) {
         _timerVideo?.cancel();
       }
     });
+  }
+
+  ///Start Video Bubble service and show the bubble
+  void openVideoBubbleAsset(String asset) async {
+    ByteData data = await rootBundle.load(asset);
+    List<int> bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    Directory directory = await getApplicationDocumentsDirectory();
+    String dbPath = join(directory.path, 'video.mp4');
+    File file = await File(dbPath).writeAsBytes(bytes);
+    String path = file.path;
+    openVideoBubble(path);
   }
 
   ///Add custom service inside bubble, usually used for
@@ -109,6 +122,7 @@ class BubbleOverlay {
     } else
       throw Exception('Bubble not running');
   }
+
   ///Stop Video Bubble service and close the bubble
   void closeVideoBubble() {
     if (_isVideoOpen) {

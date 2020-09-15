@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   http:
-
   bubble_overlay:
     path: ../
 
@@ -19,3 +18,5 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  assets:
+    - assets/video.mp4
