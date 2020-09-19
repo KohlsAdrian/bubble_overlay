@@ -82,7 +82,7 @@ class _Home extends State<Home> {
   void openBubbleVideo() async {
     String url =
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-    bubbleOverlay.openVideoBubble(url);
+    bubbleOverlay.openVideoBubble(url, startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
   }
 
   void openBubbleVideoAssets() async {
@@ -137,6 +137,10 @@ class _Home extends State<Home> {
               RaisedButton(
                 child: Text('Open Bubble Video Assets'),
                 onPressed: openBubbleVideoAssets,
+              ),
+              RaisedButton(
+                child: Text('Is Open'),
+                onPressed: () => print(bubbleOverlay.isOpen),
               ),
             ],
           ),
