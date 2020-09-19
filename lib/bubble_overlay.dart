@@ -72,8 +72,35 @@ class BubbleOverlay {
   }
 
   ///Start Video Bubble service and show the bubble
-  void openVideoBubble(String path) async {
-    _platform.invokeMethod('openVideoBubble', [path]);
+  void openVideoBubble(String path,
+      {int startTimeInMilliseconds,
+      ControlsType controlsType = ControlsType.STANDARD,
+      seekFunction}) async {
+    bool _seekAtStart = startTimeInMilliseconds != null ? true : false;
+    int _startTimeInMilliseconds =
+        startTimeInMilliseconds != null ? startTimeInMilliseconds : 0;
+    _platform.invokeMethod('openVideoBubble', [
+      path,
+      _seekAtStart,
+      _startTimeInMilliseconds,
+      controlsType
+          .toString()
+          .substring(controlsType.toString().lastIndexOf(".") + 1)
+    ]);
+
+    bool _isVideoOpenLast = false;
+    Timer _timerEndService;
+    _timerEndService = Timer.periodic(Duration(seconds: 1), (timer) async {
+      _isVideoOpen =
+          await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
+      if (!_isVideoOpen) {
+        if (!_isVideoOpenLast) {
+          a(seekFunction);
+          _timerEndService?.cancel();
+        }
+      }
+      _isVideoOpenLast = _isVideoOpen;
+    });
 
     ///Creates [_timerVideo] to check periodically if
     ///bubble [_isVideoOpen] if Service is bounded, [true] if bounded,
@@ -87,8 +114,21 @@ class BubbleOverlay {
     });
   }
 
+  void a(seekFunction) async {
+    print("seekFunction!!!!!!");
+    bool isCurrentTimeDirty =
+        await _platform?.invokeMethod('isCurrentTimeDirty');
+    int currentTime = await _platform?.invokeMethod('getCurrentTime');
+    if (isCurrentTimeDirty) {
+      print("seekFunction to " + currentTime.toString());
+      if (seekFunction != null) {
+        seekFunction(currentTime);
+      }
+    }
+  }
+
   ///Start Video Bubble service and show the bubble
-  void openVideoBubbleAsset(String asset) async {
+  void openVideoBubbleAsset(String asset, {int startTimeInMilliseconds}) async {
     ByteData data = await rootBundle.load(asset);
     List<int> bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -96,7 +136,7 @@ class BubbleOverlay {
     String dbPath = join(directory.path, 'video.mp4');
     File file = await File(dbPath).writeAsBytes(bytes);
     String path = file.path;
-    openVideoBubble(path);
+    openVideoBubble(path, startTimeInMilliseconds: startTimeInMilliseconds);
   }
 
   ///Add custom service inside bubble, usually used for
@@ -196,3 +236,5 @@ class BubbleOverlay {
       ? throw Exception('Bubble not running')
       : _platform.invokeMethod('updateBubbleColor', bubbleColor);
 }
+
+enum ControlsType { STANDARD, MINIMAL }

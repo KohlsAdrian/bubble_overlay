@@ -1,6 +1,7 @@
 package com.adriankohls.bubble_overlay
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -10,20 +11,32 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.PowerManager
 import android.view.*
-import android.view.View.OnTouchListener
+import android.view.View.*
+import android.widget.ImageView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import io.flutter.embedding.android.FlutterActivity
+
 
 class BubbleVideoOverlayService : Service() {
     private var mWindowManager: WindowManager? = null
     private var mBubbleVideoView: View? = null
     private var player: ExoPlayer? = null
+    private var playerView: PlayerView? = null
     private var mWakeLock: PowerManager.WakeLock? = null
     private var binder = LocalBinder()
+    private var inflater: LayoutInflater? = null
+    private var rootView: ViewGroup? = null
+    private var isToSeek: Boolean = false
+    private var startTimeInMilliseconds = 0L
 
     override fun onBind(intent: Intent): IBinder? {
         return binder
@@ -33,13 +46,42 @@ class BubbleVideoOverlayService : Service() {
         fun getService() = this@BubbleVideoOverlayService
     }
 
-    fun setVideo(uri: Uri) {
+    fun setVideo(uri: Uri, seekAtStart: Boolean, startTimeInMilliseconds: Long, controlsType: ControlsType = ControlsType.STANDARD) {
         val dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, application.packageName))
         val videoSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
+        this.isToSeek = seekAtStart
+        this.startTimeInMilliseconds = startTimeInMilliseconds
+
+        when(controlsType) {
+            ControlsType.MINIMAL -> loadMinimalControls()
+            else -> loadStandardControls()
+        }
 
         player?.prepare(videoSource)
+
+        if (seekAtStart) {
+            //seek
+            player?.addListener(object : Player.EventListener {
+                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                    when (playbackState) {
+//                        Player.STATE_IDLE -> {}
+//                        Player.STATE_BUFFERING -> {}
+                        Player.STATE_READY -> onPlayerReady(playWhenReady, playbackState)
+//                        Player.STATE_ENDED -> {}
+                    }
+                }
+            })
+        }
     }
 
+    fun onPlayerReady(playWhenReady: Boolean, playbackState: Int) {
+//        Log.d("isToSeek", isToSeek.toString())
+//        Log.d("startTimeInSeconds", startTimeInMilliseconds.toString())
+        if (isToSeek) {
+            player?.seekTo(this.startTimeInMilliseconds)
+            isToSeek = false
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         mWakeLock?.acquire(30 * 60 * 1000L /*30 minutes*/)
@@ -51,12 +93,15 @@ class BubbleVideoOverlayService : Service() {
         super.onCreate()
 
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "layout_video_bubble:service")
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "layout_video_bubble_video_player:service")
 
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        mBubbleVideoView = inflater.inflate(R.layout.layout_video_bubble, null)
+        inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        mBubbleVideoView = inflater?.inflate(R.layout.layout_video_bubble_video_player, null)
 
-        val playerView = mBubbleVideoView?.findViewById<PlayerView>(R.id.bubble_player_view)
+        playerView = mBubbleVideoView?.findViewById<PlayerView>(R.id.bubble_player_view)
+
+        rootView = mBubbleVideoView?.findViewById(R.id.coordinatorLayout) as ViewGroup
+
         player = SimpleExoPlayer.Builder(this).build()
         player?.playWhenReady = true
         playerView?.player = player
@@ -85,12 +130,6 @@ class BubbleVideoOverlayService : Service() {
         //Add the view to the window
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         mWindowManager?.addView(mBubbleVideoView, params)
-
-        //Set the close button.
-        val closeButton = mBubbleVideoView?.findViewById<View>(R.id.bubble_close)
-        closeButton?.setOnClickListener { //
-            stopSelf()
-        }
 
         mBubbleVideoView?.rootView?.setOnTouchListener(
                 object : OnTouchListener {
@@ -140,6 +179,73 @@ class BubbleVideoOverlayService : Service() {
         )
     }
 
+    private fun loadStandardControls() {
+        val child: ConstraintLayout = inflater?.inflate(R.layout.layout_standard_controls, rootView, false) as ConstraintLayout
+        rootView?.addView(child)
+        applyCorrectConstraint(child)
+
+        //Set the close button.
+        val closeButton = mBubbleVideoView?.findViewById<View>(R.id.bubble_close)
+        closeButton?.setOnClickListener {
+            closeServiceAndReturnData()
+        }
+    }
+
+    private fun loadMinimalControls() {
+        val child: ConstraintLayout = inflater?.inflate(R.layout.layout_video_bubble_minimal_controls, rootView, false) as ConstraintLayout
+        rootView?.addView(child)
+        applyCorrectConstraint( child)
+        playerView?.useController = false
+
+        val pauseButton: ImageView? = mBubbleVideoView?.findViewById(R.id.bubble_pause)
+        val playButton: ImageView? = mBubbleVideoView?.findViewById(R.id.bubble_play)
+        pauseButton?.setOnClickListener {
+            togglePlayPause(pauseButton, playButton)
+        }
+        playButton?.setOnClickListener {
+            togglePlayPause(pauseButton, playButton)
+        }
+        val openAppButton: ImageView? = mBubbleVideoView?.findViewById(R.id.bubble_open_app)
+        openAppButton?.setOnClickListener {
+            closeServiceAndReturnData()
+        }
+    }
+
+    private fun closeServiceAndReturnData() {
+        sendBroadcast(player?.currentPosition!!)
+        stopSelf()
+    }
+
+    private fun sendBroadcast(currentTime: Long) {
+        val intent = Intent("message") //put the same message as in the filter you used in the activity when registering the receiver
+        intent.putExtra("currentTime", currentTime)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun togglePlayPause(pauseButton: ImageView?, playButton: ImageView?) {
+        if (player?.isPlaying!!) {
+            pauseButton?.visibility = GONE
+            playButton?.visibility = VISIBLE
+            player?.playWhenReady = false
+        } else {
+            pauseButton?.visibility = VISIBLE
+            playButton?.visibility = GONE
+            player?.playWhenReady = true
+        }
+    }
+
+    private fun applyCorrectConstraint(child: ConstraintLayout) {
+        val rootView = this.rootView as ConstraintLayout
+        val cs = ConstraintSet()
+        cs.clone(rootView)
+        cs.connect(child.id, ConstraintSet.TOP, rootView.id, ConstraintSet.TOP)
+        cs.connect(child.id, ConstraintSet.BOTTOM, rootView.id, ConstraintSet.BOTTOM)
+        cs.connect(child.id, ConstraintSet.END, rootView.id, ConstraintSet.END)
+        cs.connect(child.id, ConstraintSet.START, rootView.id, ConstraintSet.START)
+        cs.constrainHeight(child.id, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
+        cs.constrainWidth(child.id, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
+        cs.applyTo(rootView)
+    }
 
 
     override fun onDestroy() {
