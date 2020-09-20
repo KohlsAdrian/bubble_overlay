@@ -44,18 +44,6 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
         }
     }
 
-//    protected fun onResume() {
-//        super.onResume()
-//        LocalBroadcastManager.getInstance(this)
-//                .registerReceiver(bReceiver, IntentFilter("message"))
-//    }
-//
-//    protected fun onPause() {
-//        super.onPause()
-//        LocalBroadcastManager.getInstance(this)
-//                .unregisterReceiver(bReceiver)
-//    }
-
 
     private fun connect(call: MethodCall?) {
         connection = object : ServiceConnection {
