@@ -75,7 +75,7 @@ class BubbleOverlay {
   void openVideoBubble(String path,
       {int startTimeInMilliseconds,
       ControlsType controlsType = ControlsType.STANDARD,
-      seekFunction}) async {
+      onEndServiceTask}) async {
     // To call from native android after close service.
     _platform.setMethodCallHandler((MethodCall call) async {
       print('_handleCloseService method called');
@@ -83,7 +83,10 @@ class BubbleOverlay {
         case "getCurrentTime":
           print('From Native====');
           print(call.arguments.toString());
-          getCurrentTime(seekFunction, call.arguments["isCurrentTimeDirty"].toLowerCase() == "true", int.parse(call.arguments["currentTime"]));
+          getCurrentTime(
+              onEndServiceTask,
+              call.arguments["isCurrentTimeDirty"].toLowerCase() == "true",
+              int.parse(call.arguments["currentTime"]));
       }
     });
 
@@ -111,7 +114,8 @@ class BubbleOverlay {
     });
   }
 
-  Future<void> getCurrentTime(seekFunction, bool isCurrentTimeDirty, int currentTime) async {
+  Future<void> getCurrentTime(
+      seekFunction, bool isCurrentTimeDirty, int currentTime) async {
     print("seekFunction!!!!!!");
     if (isCurrentTimeDirty) {
       print("seekFunction to " + currentTime.toString());
