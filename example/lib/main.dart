@@ -6,7 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
-  runApp(MaterialApp(home: Home()));
+  runApp(MaterialApp(
+    home: Home(),
+    routes: <String, WidgetBuilder>{
+      '/home': (BuildContext context) => new Home(),
+    },
+  ));
 }
 
 class Home extends StatefulWidget {
@@ -82,7 +87,9 @@ class _Home extends State<Home> {
   void openBubbleVideo() async {
     String url =
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-    bubbleOverlay.openVideoBubble(url, startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
+    bubbleOverlay.openVideoBubble(url,
+        startTimeInMilliseconds: 15000,
+        controlsType: ControlsType.MINIMAL);
   }
 
   void openBubbleVideoAssets() async {
