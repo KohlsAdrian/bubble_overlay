@@ -76,6 +76,17 @@ class BubbleOverlay {
       {int startTimeInMilliseconds,
       ControlsType controlsType = ControlsType.STANDARD,
       seekFunction}) async {
+    // To call from native android after close service.
+    _platform.setMethodCallHandler((MethodCall call) async {
+      print('_handleCloseService method called');
+      switch (call.method) {
+        case "getCurrentTime":
+          print('From Native====');
+          print(call.arguments.toString());
+          getCurrentTime(seekFunction, call.arguments["isCurrentTimeDirty"].toLowerCase() == "true", int.parse(call.arguments["currentTime"]));
+      }
+    });
+
     bool _seekAtStart = startTimeInMilliseconds != null ? true : false;
     int _startTimeInMilliseconds =
         startTimeInMilliseconds != null ? startTimeInMilliseconds : 0;
@@ -87,20 +98,6 @@ class BubbleOverlay {
           .toString()
           .substring(controlsType.toString().lastIndexOf(".") + 1)
     ]);
-
-    bool _isVideoOpenLast = false;
-    Timer _timerEndService;
-    _timerEndService = Timer.periodic(Duration(seconds: 1), (timer) async {
-      _isVideoOpen =
-          await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
-      if (!_isVideoOpen) {
-        if (!_isVideoOpenLast) {
-          a(seekFunction);
-          _timerEndService?.cancel();
-        }
-      }
-      _isVideoOpenLast = _isVideoOpen;
-    });
 
     ///Creates [_timerVideo] to check periodically if
     ///bubble [_isVideoOpen] if Service is bounded, [true] if bounded,
@@ -114,11 +111,8 @@ class BubbleOverlay {
     });
   }
 
-  void a(seekFunction) async {
+  Future<void> getCurrentTime(seekFunction, bool isCurrentTimeDirty, int currentTime) async {
     print("seekFunction!!!!!!");
-    bool isCurrentTimeDirty =
-        await _platform?.invokeMethod('isCurrentTimeDirty');
-    int currentTime = await _platform?.invokeMethod('getCurrentTime');
     if (isCurrentTimeDirty) {
       print("seekFunction to " + currentTime.toString());
       if (seekFunction != null) {

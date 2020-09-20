@@ -37,7 +37,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
             //put here whaterver you want your activity to do with the intent received
             var lastCurrentTime = intent?.getLongExtra("currentTime", -1)
             Log.d("wooow currentTime:", currentTime.toString())
-            if(lastCurrentTime != currentTime) {
+            if (lastCurrentTime != currentTime) {
                 currentTime = lastCurrentTime!!
                 isCurrentTimeDirty = true
             }
@@ -129,6 +129,12 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
 
 
             override fun onServiceDisconnected(arg0: ComponentName) {
+                val map = mutableMapOf<String, String>()
+                map["isCurrentTimeDirty"] = isCurrentTimeDirty.toString()
+                map["currentTime"] = currentTime.toString()
+
+                channel?.invokeMethod("getCurrentTime", map)
+
                 mOverlayVideoService?.stopSelf()
                 mBoundVideo = false
             }
@@ -183,8 +189,6 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     activity?.moveTaskToBack(true)
                 }
             }
-            "isCurrentTimeDirty" -> isCurrentTimeDirty
-            "getCurrentTime" -> currentTime
             "isVideoBubbleOpen" -> result.success(mBoundVideo)
             "closeVideoBubble" -> if (mBoundVideo) releaseVideo()
             "isBubbleOpen" -> result.success(mBound)
