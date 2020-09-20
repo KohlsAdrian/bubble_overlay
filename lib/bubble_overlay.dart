@@ -93,13 +93,15 @@ class BubbleOverlay {
     bool _seekAtStart = startTimeInMilliseconds != null ? true : false;
     int _startTimeInMilliseconds =
         startTimeInMilliseconds != null ? startTimeInMilliseconds : 0;
+    ControlsType _controlsType =
+        controlsType != null ? controlsType : ControlsType.STANDARD;
     _platform.invokeMethod('openVideoBubble', [
       path,
       _seekAtStart,
       _startTimeInMilliseconds,
-      controlsType
+      _controlsType
           .toString()
-          .substring(controlsType.toString().lastIndexOf(".") + 1)
+          .substring(_controlsType.toString().lastIndexOf(".") + 1)
     ]);
 
     ///Creates [_timerVideo] to check periodically if
@@ -126,7 +128,8 @@ class BubbleOverlay {
   }
 
   ///Start Video Bubble service and show the bubble
-  void openVideoBubbleAsset(String asset, {int startTimeInMilliseconds, ControlsType controlsType}) async {
+  void openVideoBubbleAsset(String asset,
+      {int startTimeInMilliseconds, ControlsType controlsType}) async {
     ByteData data = await rootBundle.load(asset);
     List<int> bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -134,7 +137,9 @@ class BubbleOverlay {
     String dbPath = join(directory.path, 'video.mp4');
     File file = await File(dbPath).writeAsBytes(bytes);
     String path = file.path;
-    openVideoBubble(path, startTimeInMilliseconds: startTimeInMilliseconds, controlsType: controlsType);
+    openVideoBubble(path,
+        startTimeInMilliseconds: startTimeInMilliseconds,
+        controlsType: controlsType);
   }
 
   ///Add custom service inside bubble, usually used for
