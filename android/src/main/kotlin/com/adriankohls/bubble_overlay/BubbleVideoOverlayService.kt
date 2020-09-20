@@ -30,6 +30,7 @@ class BubbleVideoOverlayService : Service() {
     private var isBubbleVideoViewBig: Boolean = false
     private var heightScreen: Int? = null
     private var widthScreen: Int? = null
+    private var restoreWIndowSizeDelayed: Handler? = null
     private var player: ExoPlayer? = null
     private var playerView: PlayerView? = null
     private var controlsView: ConstraintLayout? = null
@@ -257,7 +258,8 @@ class BubbleVideoOverlayService : Service() {
             mWindowManager?.updateViewLayout(mBubbleVideoView, params)
             Log.d("showControlsOnTouch", "size icreased")
 
-            Handler(Looper.getMainLooper()).postDelayed({
+            restoreWIndowSizeDelayed = Handler(Looper.getMainLooper())
+            restoreWIndowSizeDelayed!!.postDelayed({
                 controlsView?.visibility = INVISIBLE
                 params.width = (params.width.toFloat() / 1.2.toFloat()).toInt()
                 params.height = (params.height.toFloat() / 1.2.toFloat()).toInt()
@@ -301,6 +303,7 @@ class BubbleVideoOverlayService : Service() {
     }
 
     private fun closeServiceAndReturnData() {
+        restoreWIndowSizeDelayed?.removeCallbacksAndMessages(null);
         sendBroadcast(player?.currentPosition!!)
         stopSelf()
     }
