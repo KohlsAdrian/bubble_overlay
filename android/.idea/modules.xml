@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-bubble_overlay.iml" filepath="$PROJECT_DIR$/.idea/modules/android-bubble_overlay.iml" group="bubble_overlay" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/bubble_overlay.iml" filepath="$PROJECT_DIR$/.idea/modules/bubble_overlay.iml" group="bubble_overlay" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.adriankohls.bubble_overlay-bubble_overlay.iml" filepath="$PROJECT_DIR$/.idea/modules/com.adriankohls.bubble_overlay-bubble_overlay.iml" group="bubble_overlay" />
     </modules>
