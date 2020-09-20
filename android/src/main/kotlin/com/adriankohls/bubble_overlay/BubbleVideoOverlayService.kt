@@ -31,6 +31,7 @@ class BubbleVideoOverlayService : Service() {
     private var heightScreen: Int? = null
     private var widthScreen: Int? = null
     private var restoreWIndowSizeDelayed: Handler? = null
+    private var params: WindowManager.LayoutParams? = null
     private var player: ExoPlayer? = null
     private var playerView: PlayerView? = null
     private var controlsView: ConstraintLayout? = null
@@ -115,27 +116,27 @@ class BubbleVideoOverlayService : Service() {
         player?.playWhenReady = true
         playerView?.player = player
 
-        val params = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        params = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
+                    PixelFormat.TRANSLUCENT)
         } else {
             WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
+                    PixelFormat.TRANSLUCENT)
         }
 
-        setDefaultWindowSize(params)
+        setDefaultWindowSize()
 
-        setWindowSizeOnRatioAspect(params)
+        setWindowSizeOnRatioAspect()
 
-        gestureOnFloatinWindow(params)
+        gestureOnFloatinWindow()
     }
 
     private fun getScreenSize() {
@@ -148,21 +149,21 @@ class BubbleVideoOverlayService : Service() {
         Log.i("heightScreen", "heightScreen:$heightScreen, widthScreen:$widthScreen")
     }
 
-    private fun setDefaultWindowSize(params: WindowManager.LayoutParams) {
+    private fun setDefaultWindowSize() {
         //Specify the window head position
-        params.gravity = Gravity.BOTTOM or Gravity.END //Initially view will be added to Bottom-Right corner
-        params.x = (widthScreen!!.toFloat() * 4.toFloat() / 100.toFloat()).toInt()
-        params.y = (heightScreen!!.toFloat() * 3.toFloat() / 100.toFloat()).toInt()
+        params!!.gravity = Gravity.BOTTOM or Gravity.END //Initially view will be added to Bottom-Right corner
+        params!!.x = (widthScreen!!.toFloat() * 4.toFloat() / 100.toFloat()).toInt()
+        params!!.y = (heightScreen!!.toFloat() * 3.toFloat() / 100.toFloat()).toInt()
 
         //Specify the window size
         // Invisible until give aspect ratio
         // IMPORTANT: HEIGHT AND WIDTH CAN'T BE OR BUBBLE WON'T BE SHOWN
-        params.height = 1
-        params.width = 1
+        params!!.height = 1
+        params!!.width = 1
     }
 
-    private fun setWindowSizeOnRatioAspect(params: WindowManager.LayoutParams) {
-        (player as SimpleExoPlayer)?.addVideoListener(object : SimpleExoPlayer.VideoListener {
+    private fun setWindowSizeOnRatioAspect() {
+        (player as SimpleExoPlayer).addVideoListener(object : SimpleExoPlayer.VideoListener {
             override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
                 Log.i("onVideoSizeChanged", "MainActivity.onVideoSizeChanged.width:$width, height:$height   pixelWidthHeightRatio:$pixelWidthHeightRatio")
 
@@ -178,11 +179,11 @@ class BubbleVideoOverlayService : Service() {
                     currentHeight = (heightScreen!!.toFloat() * 40.toFloat() / 100.toFloat()).toInt()
                     currentWidth = (currentHeight.toFloat() * (height.toFloat() / width.toFloat())).toInt()
                 }
-                params.width = currentWidth
-                params.height = currentHeight
+                params!!.width = currentWidth
+                params!!.height = currentHeight
                 mWindowManager?.updateViewLayout(mBubbleVideoView, params)
-                Log.d("params.width", params.width.toString())
-                Log.d("params.height", params.height.toString())
+                Log.d("params.width", params!!.width.toString())
+                Log.d("params.height", params!!.height.toString())
             }
 
             override fun onRenderedFirstFrame() {
@@ -191,7 +192,7 @@ class BubbleVideoOverlayService : Service() {
         })
     }
 
-    private fun gestureOnFloatinWindow(params: WindowManager.LayoutParams) {
+    private fun gestureOnFloatinWindow() {
         //Add the view to the window
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         mWindowManager?.addView(mBubbleVideoView, params)
@@ -209,8 +210,8 @@ class BubbleVideoOverlayService : Service() {
                             MotionEvent.ACTION_DOWN -> {
 
                                 //remember the initial position.
-                                initialX = params.x
-                                initialY = params.y
+                                initialX = params!!.x
+                                initialY = params!!.y
 
                                 //get the touch location
                                 initialTouchX = event.rawX
@@ -221,7 +222,7 @@ class BubbleVideoOverlayService : Service() {
                             }
                             MotionEvent.ACTION_UP -> {
                                 if (lastAction == MotionEvent.ACTION_DOWN) {
-                                    showControlsOnTouch(params)
+                                    showControlsOnTouch()
                                 }
 
                                 lastAction = event.action
@@ -230,8 +231,8 @@ class BubbleVideoOverlayService : Service() {
                             }
                             MotionEvent.ACTION_MOVE -> {
                                 //Calculate the X and Y coordinates of the view.
-                                params.x = initialX - (event.rawX - initialTouchX).toInt()
-                                params.y = initialY - (event.rawY - initialTouchY).toInt()
+                                params!!.x = initialX - (event.rawX - initialTouchX).toInt()
+                                params!!.y = initialY - (event.rawY - initialTouchY).toInt()
 
                                 //Update the layout with new X & Y coordinate
                                 mWindowManager?.updateViewLayout(mBubbleVideoView, params)
@@ -248,12 +249,12 @@ class BubbleVideoOverlayService : Service() {
         )
     }
 
-    private fun showControlsOnTouch(params: WindowManager.LayoutParams) {
+    private fun showControlsOnTouch() {
         Log.d("showControlsOnTouch", "enter")
         if (!isBubbleVideoViewBig) {
             isBubbleVideoViewBig = true
-            params.width = (params.width.toFloat() * 1.2.toFloat()).toInt()
-            params.height = (params.height.toFloat() * 1.2.toFloat()).toInt()
+            params!!.width = (params!!.width.toFloat() * 1.2.toFloat()).toInt()
+            params!!.height = (params!!.height.toFloat() * 1.2.toFloat()).toInt()
             controlsView?.visibility = VISIBLE
             mWindowManager?.updateViewLayout(mBubbleVideoView, params)
             Log.d("showControlsOnTouch", "size icreased")
@@ -261,8 +262,8 @@ class BubbleVideoOverlayService : Service() {
             restoreWIndowSizeDelayed = Handler(Looper.getMainLooper())
             restoreWIndowSizeDelayed!!.postDelayed({
                 controlsView?.visibility = INVISIBLE
-                params.width = (params.width.toFloat() / 1.2.toFloat()).toInt()
-                params.height = (params.height.toFloat() / 1.2.toFloat()).toInt()
+                params!!.width = (params!!.width.toFloat() / 1.2.toFloat()).toInt()
+                params!!.height = (params!!.height.toFloat() / 1.2.toFloat()).toInt()
                 mWindowManager?.updateViewLayout(mBubbleVideoView, params)
                 isBubbleVideoViewBig = false
                 Log.d("showControlsOnTouch", "size restored")
@@ -280,6 +281,11 @@ class BubbleVideoOverlayService : Service() {
         closeButton?.setOnClickListener {
             closeServiceAndReturnData()
         }
+
+        // When exoplayer shows its control, it doesn't propagate the touch event
+        // To fix it, this code is needed
+        // TODO 
+     // // playerView?.setOnTouchListener()
     }
 
     private fun loadMinimalControls() {
@@ -303,7 +309,7 @@ class BubbleVideoOverlayService : Service() {
     }
 
     private fun closeServiceAndReturnData() {
-        restoreWIndowSizeDelayed?.removeCallbacksAndMessages(null);
+        restoreWIndowSizeDelayed?.removeCallbacksAndMessages(null)
         sendBroadcast(player?.currentPosition!!)
         stopSelf()
     }
