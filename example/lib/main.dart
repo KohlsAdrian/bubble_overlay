@@ -93,8 +93,7 @@ class _Home extends State<Home> {
 
   void openBubbleVideoAssets() async {
     String asset = 'assets/video.mp4';
-    bubbleOverlay.openVideoBubbleAsset(asset,
-        startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
+    bubbleOverlay.openVideoBubbleAsset(asset);
   }
 
   @override
