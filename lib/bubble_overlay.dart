@@ -126,7 +126,7 @@ class BubbleOverlay {
   }
 
   ///Start Video Bubble service and show the bubble
-  void openVideoBubbleAsset(String asset, {int startTimeInMilliseconds}) async {
+  void openVideoBubbleAsset(String asset, {int startTimeInMilliseconds, ControlsType controlsType}) async {
     ByteData data = await rootBundle.load(asset);
     List<int> bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -134,7 +134,7 @@ class BubbleOverlay {
     String dbPath = join(directory.path, 'video.mp4');
     File file = await File(dbPath).writeAsBytes(bytes);
     String path = file.path;
-    openVideoBubble(path, startTimeInMilliseconds: startTimeInMilliseconds);
+    openVideoBubble(path, startTimeInMilliseconds: startTimeInMilliseconds, controlsType: controlsType);
   }
 
   ///Add custom service inside bubble, usually used for

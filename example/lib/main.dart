@@ -88,13 +88,13 @@ class _Home extends State<Home> {
     String url =
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
     bubbleOverlay.openVideoBubble(url,
-        startTimeInMilliseconds: 15000,
-        controlsType: ControlsType.MINIMAL);
+        startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
   }
 
   void openBubbleVideoAssets() async {
     String asset = 'assets/video.mp4';
-    bubbleOverlay.openVideoBubbleAsset(asset);
+    bubbleOverlay.openVideoBubbleAsset(asset,
+        startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
   }
 
   @override

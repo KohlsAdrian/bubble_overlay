@@ -1,15 +1,14 @@
 package com.adriankohls.bubble_overlay
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.graphics.Point
 import android.net.Uri
-import android.os.Binder
-import android.os.IBinder
-import android.os.PowerManager
+import android.os.*
+import android.util.Log
 import android.view.*
 import android.view.View.*
 import android.widget.ImageView
@@ -23,20 +22,25 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import io.flutter.embedding.android.FlutterActivity
 
 
 class BubbleVideoOverlayService : Service() {
     private var mWindowManager: WindowManager? = null
     private var mBubbleVideoView: View? = null
+    private var isBubbleVideoViewBig: Boolean = false
+    private var heightScreen: Int? = null
+    private var widthScreen: Int? = null
     private var player: ExoPlayer? = null
     private var playerView: PlayerView? = null
+    private var controlsView: ConstraintLayout? = null
     private var mWakeLock: PowerManager.WakeLock? = null
     private var binder = LocalBinder()
     private var inflater: LayoutInflater? = null
     private var rootView: ViewGroup? = null
     private var isToSeek: Boolean = false
     private var startTimeInMilliseconds = 0L
+
+    private val RESIZE_SCREEN_TIMEOUT: Long = 2500L
 
     override fun onBind(intent: Intent): IBinder? {
         return binder
@@ -52,10 +56,11 @@ class BubbleVideoOverlayService : Service() {
         this.isToSeek = seekAtStart
         this.startTimeInMilliseconds = startTimeInMilliseconds
 
-        when(controlsType) {
+        when (controlsType) {
             ControlsType.MINIMAL -> loadMinimalControls()
             else -> loadStandardControls()
         }
+        controlsView?.visibility = INVISIBLE
 
         player?.prepare(videoSource)
 
@@ -67,7 +72,7 @@ class BubbleVideoOverlayService : Service() {
 //                        Player.STATE_IDLE -> {}
 //                        Player.STATE_BUFFERING -> {}
                         Player.STATE_READY -> onPlayerReady(playWhenReady, playbackState)
-//                        Player.STATE_ENDED -> {}
+                        Player.STATE_ENDED -> closeServiceAndReturnData()
                     }
                 }
             })
@@ -88,9 +93,10 @@ class BubbleVideoOverlayService : Service() {
         return START_NOT_STICKY
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility", "RestrictedApi")
     override fun onCreate() {
         super.onCreate()
+
 
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "layout_video_bubble_video_player:service")
@@ -101,6 +107,8 @@ class BubbleVideoOverlayService : Service() {
         playerView = mBubbleVideoView?.findViewById<PlayerView>(R.id.bubble_player_view)
 
         rootView = mBubbleVideoView?.findViewById(R.id.coordinatorLayout) as ViewGroup
+
+        getScreenSize()
 
         player = SimpleExoPlayer.Builder(this).build()
         player?.playWhenReady = true
@@ -122,11 +130,67 @@ class BubbleVideoOverlayService : Service() {
                     PixelFormat.TRANSLUCENT);
         }
 
-        //Specify the chat head position
-        params.gravity = Gravity.TOP or Gravity.START //Initially view will be added to top-left corner
-        params.x = 0
-        params.y = 100
+        setDefaultWindowSize(params)
 
+        setWindowSizeOnRatioAspect(params)
+
+        gestureOnFloatinWindow(params)
+    }
+
+    private fun getScreenSize() {
+        val wm = this.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = wm.defaultDisplay
+        val size = Point()
+        display!!.getSize(size)
+        heightScreen = size.y
+        widthScreen = size.x
+        Log.i("heightScreen", "heightScreen:$heightScreen, widthScreen:$widthScreen")
+    }
+
+    private fun setDefaultWindowSize(params: WindowManager.LayoutParams) {
+        //Specify the window head position
+        params.gravity = Gravity.BOTTOM or Gravity.END //Initially view will be added to Bottom-Right corner
+        params.x = (widthScreen!!.toFloat() * 4.toFloat() / 100.toFloat()).toInt()
+        params.y = (heightScreen!!.toFloat() * 3.toFloat() / 100.toFloat()).toInt()
+
+        //Specify the window size
+        // Invisible until give aspect ratio
+        // IMPORTANT: HEIGHT AND WIDTH CAN'T BE OR BUBBLE WON'T BE SHOWN
+        params.height = 1
+        params.width = 1
+    }
+
+    private fun setWindowSizeOnRatioAspect(params: WindowManager.LayoutParams) {
+        (player as SimpleExoPlayer)?.addVideoListener(object : SimpleExoPlayer.VideoListener {
+            override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
+                Log.i("onVideoSizeChanged", "MainActivity.onVideoSizeChanged.width:$width, height:$height   pixelWidthHeightRatio:$pixelWidthHeightRatio")
+
+                var currentWidth: Int
+                var currentHeight: Int
+                if (width > height) {
+                    currentWidth = (widthScreen!!.toFloat() * 60.toFloat() / 100.toFloat()).toInt()
+                    currentHeight = (currentWidth.toFloat() * (height.toFloat() / width.toFloat())).toInt()
+
+                    Log.d("(height / width)", (height.toFloat() / width.toFloat()).toString())
+                    Log.d("currentWidth", ((widthScreen!!.toFloat() * 60.toFloat()) / 100.toFloat()).toString())
+                } else {
+                    currentHeight = (heightScreen!!.toFloat() * 40.toFloat() / 100.toFloat()).toInt()
+                    currentWidth = (currentHeight.toFloat() * (height.toFloat() / width.toFloat())).toInt()
+                }
+                params.width = currentWidth
+                params.height = currentHeight
+                mWindowManager?.updateViewLayout(mBubbleVideoView, params)
+                Log.d("params.width", params.width.toString())
+                Log.d("params.height", params.height.toString())
+            }
+
+            override fun onRenderedFirstFrame() {
+                Log.i("onRenderedFirstFrame", "MainActivity.onRenderedFirstFrame.")
+            }
+        })
+    }
+
+    private fun gestureOnFloatinWindow(params: WindowManager.LayoutParams) {
         //Add the view to the window
         mWindowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         mWindowManager?.addView(mBubbleVideoView, params)
@@ -155,14 +219,18 @@ class BubbleVideoOverlayService : Service() {
                                 return true
                             }
                             MotionEvent.ACTION_UP -> {
-                                //if (lastAction == MotionEvent.ACTION_DOWN) { }
+                                if (lastAction == MotionEvent.ACTION_DOWN) {
+                                    showControlsOnTouch(params)
+                                }
+
                                 lastAction = event.action
+
                                 return true
                             }
                             MotionEvent.ACTION_MOVE -> {
                                 //Calculate the X and Y coordinates of the view.
-                                params.x = initialX + (event.rawX - initialTouchX).toInt()
-                                params.y = initialY + (event.rawY - initialTouchY).toInt()
+                                params.x = initialX - (event.rawX - initialTouchX).toInt()
+                                params.y = initialY - (event.rawY - initialTouchY).toInt()
 
                                 //Update the layout with new X & Y coordinate
                                 mWindowManager?.updateViewLayout(mBubbleVideoView, params)
@@ -179,10 +247,31 @@ class BubbleVideoOverlayService : Service() {
         )
     }
 
+    private fun showControlsOnTouch(params: WindowManager.LayoutParams) {
+        Log.d("showControlsOnTouch", "enter")
+        if (!isBubbleVideoViewBig) {
+            isBubbleVideoViewBig = true
+            params.width = (params.width.toFloat() * 1.2.toFloat()).toInt()
+            params.height = (params.height.toFloat() * 1.2.toFloat()).toInt()
+            controlsView?.visibility = VISIBLE
+            mWindowManager?.updateViewLayout(mBubbleVideoView, params)
+            Log.d("showControlsOnTouch", "size icreased")
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                controlsView?.visibility = INVISIBLE
+                params.width = (params.width.toFloat() / 1.2.toFloat()).toInt()
+                params.height = (params.height.toFloat() / 1.2.toFloat()).toInt()
+                mWindowManager?.updateViewLayout(mBubbleVideoView, params)
+                isBubbleVideoViewBig = false
+                Log.d("showControlsOnTouch", "size restored")
+            }, RESIZE_SCREEN_TIMEOUT)
+        }
+    }
+
     private fun loadStandardControls() {
-        val child: ConstraintLayout = inflater?.inflate(R.layout.layout_standard_controls, rootView, false) as ConstraintLayout
-        rootView?.addView(child)
-        applyCorrectConstraint(child)
+        controlsView = inflater?.inflate(R.layout.layout_standard_controls, rootView, false) as ConstraintLayout
+        rootView?.addView(controlsView)
+        applyCorrectConstraint(controlsView!!)
 
         //Set the close button.
         val closeButton = mBubbleVideoView?.findViewById<View>(R.id.bubble_close)
@@ -192,9 +281,9 @@ class BubbleVideoOverlayService : Service() {
     }
 
     private fun loadMinimalControls() {
-        val child: ConstraintLayout = inflater?.inflate(R.layout.layout_video_bubble_minimal_controls, rootView, false) as ConstraintLayout
-        rootView?.addView(child)
-        applyCorrectConstraint( child)
+        controlsView = inflater?.inflate(R.layout.layout_video_bubble_minimal_controls, rootView, false) as ConstraintLayout
+        rootView?.addView(controlsView)
+        applyCorrectConstraint(controlsView!!)
         playerView?.useController = false
 
         val pauseButton: ImageView? = mBubbleVideoView?.findViewById(R.id.bubble_pause)
@@ -223,6 +312,7 @@ class BubbleVideoOverlayService : Service() {
     }
 
     private fun togglePlayPause(pauseButton: ImageView?, playButton: ImageView?) {
+        Log.d("togglePlayPause", "enter")
         if (player?.isPlaying!!) {
             pauseButton?.visibility = GONE
             playButton?.visibility = VISIBLE
