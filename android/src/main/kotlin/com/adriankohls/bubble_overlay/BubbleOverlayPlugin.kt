@@ -31,7 +31,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
     private var isCurrentTimeDirty: Boolean = false
     private var currentTime: Long = -1
 
-
+    // give data from service
     private val BReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             //put here whaterver you want your activity to do with the intent received
@@ -111,6 +111,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                         mOverlayVideoService?.setVideo(uri, seekAtStart, startTimeInSeconds, controlsType)
                     }
 
+                // return data to flutter module
                 LocalBroadcastManager.getInstance(activity?.applicationContext!!)
                         .registerReceiver(BReceiver, IntentFilter("message"))
             }
@@ -171,6 +172,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     activity?.startActivityForResult(
                             Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")),
                             CODE_DRAW_OVER_OTHER_APP_PERMISSION)
+                    // TODO restore previous intent visibility
                 } else {
                     activity?.startService(
                             Intent(activity, BubbleVideoOverlayService::class.java))

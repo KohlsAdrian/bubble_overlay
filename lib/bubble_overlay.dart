@@ -71,19 +71,23 @@ class BubbleOverlay {
     });
   }
 
-  ///Start Video Bubble service and show the bubble
+  /// Start Video Bubble service and show the bubble
+  /// [path] specifies the uri of the file
+  /// [startTimeInMilliseconds] specify where to start watching the video in milliseconds
+  /// [controlsType] type of (ui) controls to show on the mini video player (all type avaiable in the enum ControlsType)
+  /// [onEndServiceTask] callback to call after end of the service. Useful for setting a new time on the main media player
   void openVideoBubble(String path,
       {int startTimeInMilliseconds,
       ControlsType controlsType = ControlsType.STANDARD,
       onEndServiceTask}) async {
-    // To call from native android after close service.
+    // To call from native android after service close.
     _platform.setMethodCallHandler((MethodCall call) async {
       print('_handleCloseService method called');
       switch (call.method) {
         case "getCurrentTime":
           print('From Native====');
           print(call.arguments.toString());
-          getCurrentTime(
+          sendCurrentTimeToCallback(
               onEndServiceTask,
               call.arguments["isCurrentTimeDirty"].toLowerCase() == "true",
               int.parse(call.arguments["currentTime"]));
@@ -116,7 +120,8 @@ class BubbleOverlay {
     });
   }
 
-  Future<void> getCurrentTime(
+  /// Send to callback (if setted) new current if is modified
+  Future<void> sendCurrentTimeToCallback(
       seekFunction, bool isCurrentTimeDirty, int currentTime) async {
     print("seekFunction!!!!!!");
     if (isCurrentTimeDirty) {
@@ -128,8 +133,14 @@ class BubbleOverlay {
   }
 
   ///Start Video Bubble service and show the bubble
+  /// [asset] specifies the uri of the file
+  /// [startTimeInMilliseconds] specify where to start watching the video in milliseconds
+  /// [controlsType] type of (ui) controls to show on the mini video player (all type avaiable in the enum ControlsType)
+  /// [onEndServiceTask] callback to call after end of the service. Useful for setting a new time on the main media player
   void openVideoBubbleAsset(String asset,
-      {int startTimeInMilliseconds, ControlsType controlsType}) async {
+      {int startTimeInMilliseconds,
+      ControlsType controlsType,
+      onEndServiceTask}) async {
     ByteData data = await rootBundle.load(asset);
     List<int> bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
@@ -139,7 +150,8 @@ class BubbleOverlay {
     String path = file.path;
     openVideoBubble(path,
         startTimeInMilliseconds: startTimeInMilliseconds,
-        controlsType: controlsType);
+        controlsType: controlsType,
+        onEndServiceTask: onEndServiceTask);
   }
 
   ///Add custom service inside bubble, usually used for

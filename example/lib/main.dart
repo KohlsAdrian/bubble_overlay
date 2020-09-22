@@ -46,6 +46,12 @@ class _Home extends State<Home> {
     }
   }
 
+  void closeVideoBubble() {
+    if (bubbleOverlay.isVideoOpen) {
+      bubbleOverlay.closeVideoBubble();
+    }
+  }
+
   void updateTextAndBgColor() {
     if (bubbleOverlay.isOpen) {
       bubbleOverlay.removeCallback();
@@ -109,10 +115,6 @@ class _Home extends State<Home> {
                   child: Text('Open Bubble Overlay'),
                   onPressed: () => bubbleOverlay.openBubble()),
               RaisedButton(
-                onPressed: closeBubble,
-                child: Text('Close Bubble'),
-              ),
-              RaisedButton(
                 onPressed: setTopText,
                 child: Text('Set Bubble Top Text'),
               ),
@@ -145,8 +147,20 @@ class _Home extends State<Home> {
                 onPressed: openBubbleVideoAssets,
               ),
               RaisedButton(
-                child: Text('Is Open'),
+                child: Text('Is Bubble Open'),
                 onPressed: () => print(bubbleOverlay.isOpen),
+              ),
+              RaisedButton(
+                child: Text('Is Video Open'),
+                onPressed: () => print(bubbleOverlay.isVideoOpen),
+              ),
+              RaisedButton(
+                onPressed: closeBubble,
+                child: Text('Close Bubble'),
+              ),
+              RaisedButton(
+                onPressed: closeVideoBubble,
+                child: Text('Close Video Bubble'),
               ),
             ],
           ),

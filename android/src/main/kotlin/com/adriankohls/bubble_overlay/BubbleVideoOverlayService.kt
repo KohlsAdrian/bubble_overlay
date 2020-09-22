@@ -30,7 +30,7 @@ class BubbleVideoOverlayService : Service() {
     private var isBubbleVideoViewBig: Boolean = false
     private var heightScreen: Int? = null
     private var widthScreen: Int? = null
-    private var restoreWIndowSizeDelayed: Handler? = null
+    private var restoreWindowSizeDelayed: Handler? = null
     private var params: WindowManager.LayoutParams? = null
     private var player: ExoPlayer? = null
     private var playerView: PlayerView? = null
@@ -52,33 +52,39 @@ class BubbleVideoOverlayService : Service() {
         fun getService() = this@BubbleVideoOverlayService
     }
 
+    /**
+     * @param   uri                         specifies the uri of the file
+     * @param   startTimeInMilliseconds     specify where to start watching the video in milliseconds
+     * @param   controlsType                type of (ui) controls to show on the mini video player (all type avaiable in the enum ControlsType)
+     */
     fun setVideo(uri: Uri, seekAtStart: Boolean, startTimeInMilliseconds: Long, controlsType: ControlsType = ControlsType.STANDARD) {
         val dataSourceFactory = DefaultDataSourceFactory(this, Util.getUserAgent(this, application.packageName))
         val videoSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
         this.isToSeek = seekAtStart
         this.startTimeInMilliseconds = startTimeInMilliseconds
 
+        // load controls template
         when (controlsType) {
             ControlsType.MINIMAL -> loadMinimalControls()
             else -> loadStandardControls()
         }
+        // set controls invisible at the start
         controlsView?.visibility = INVISIBLE
 
         player?.prepare(videoSource)
-
-        if (seekAtStart) {
-            //seek
             player?.addListener(object : Player.EventListener {
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     when (playbackState) {
 //                        Player.STATE_IDLE -> {}
 //                        Player.STATE_BUFFERING -> {}
-                        Player.STATE_READY -> onPlayerReady(playWhenReady, playbackState)
+                        // seek the video at the wanted position
+                        Player.STATE_READY -> if (seekAtStart) onPlayerReady(playWhenReady, playbackState)
+                        // close mini player at the end of the video
+                        // TODO ask for that to the user
                         Player.STATE_ENDED -> closeServiceAndReturnData()
                     }
                 }
             })
-        }
     }
 
     fun onPlayerReady(playWhenReady: Boolean, playbackState: Int) {
@@ -116,6 +122,7 @@ class BubbleVideoOverlayService : Service() {
         player?.playWhenReady = true
         playerView?.player = player
 
+        // params are info about floating window (size, position on the screen ecc)
         params = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -259,8 +266,8 @@ class BubbleVideoOverlayService : Service() {
             mWindowManager?.updateViewLayout(mBubbleVideoView, params)
             Log.d("showControlsOnTouch", "size icreased")
 
-            restoreWIndowSizeDelayed = Handler(Looper.getMainLooper())
-            restoreWIndowSizeDelayed!!.postDelayed({
+            restoreWindowSizeDelayed = Handler(Looper.getMainLooper())
+            restoreWindowSizeDelayed!!.postDelayed({
                 controlsView?.visibility = INVISIBLE
                 params!!.width = (params!!.width.toFloat() / 1.2.toFloat()).toInt()
                 params!!.height = (params!!.height.toFloat() / 1.2.toFloat()).toInt()
@@ -271,6 +278,7 @@ class BubbleVideoOverlayService : Service() {
         }
     }
 
+    // add the standard controls layout
     private fun loadStandardControls() {
         controlsView = inflater?.inflate(R.layout.layout_standard_controls, rootView, false) as ConstraintLayout
         rootView?.addView(controlsView)
@@ -286,8 +294,14 @@ class BubbleVideoOverlayService : Service() {
         // To fix it, this code is needed
         // TODO 
      // // playerView?.setOnTouchListener()
+
+        // to show controls
+        playerView?.setOnClickListener {
+            showControlsOnTouch()
+        }
     }
 
+    // add the minimal controls layout
     private fun loadMinimalControls() {
         controlsView = inflater?.inflate(R.layout.layout_video_bubble_minimal_controls, rootView, false) as ConstraintLayout
         rootView?.addView(controlsView)
@@ -308,12 +322,14 @@ class BubbleVideoOverlayService : Service() {
         }
     }
 
+    // stop service and return data to BubbleOverlayPlugin
     private fun closeServiceAndReturnData() {
-        restoreWIndowSizeDelayed?.removeCallbacksAndMessages(null)
+        restoreWindowSizeDelayed?.removeCallbacksAndMessages(null)
         sendBroadcast(player?.currentPosition!!)
         stopSelf()
     }
 
+    // send data to BubbleOverlayPlugin
     private fun sendBroadcast(currentTime: Long) {
         val intent = Intent("message") //put the same message as in the filter you used in the activity when registering the receiver
         intent.putExtra("currentTime", currentTime)
@@ -333,6 +349,7 @@ class BubbleVideoOverlayService : Service() {
         }
     }
 
+    // add and adapt the Constraint Layout (es controls layout)
     private fun applyCorrectConstraint(child: ConstraintLayout) {
         val rootView = this.rootView as ConstraintLayout
         val cs = ConstraintSet()
