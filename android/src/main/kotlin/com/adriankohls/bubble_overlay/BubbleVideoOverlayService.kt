@@ -184,7 +184,7 @@ class BubbleVideoOverlayService : Service() {
                     Log.d("currentWidth", ((widthScreen!!.toFloat() * 60.toFloat()) / 100.toFloat()).toString())
                 } else {
                     currentHeight = (heightScreen!!.toFloat() * 40.toFloat() / 100.toFloat()).toInt()
-                    currentWidth = (currentHeight.toFloat() * (height.toFloat() / width.toFloat())).toInt()
+                    currentWidth = (currentHeight.toFloat() * (width.toFloat() / height.toFloat())).toInt()
                 }
                 params!!.width = currentWidth
                 params!!.height = currentHeight
