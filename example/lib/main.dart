@@ -6,7 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 Future<void> main() async {
-  runApp(MaterialApp(home: Home()));
+  runApp(MaterialApp(
+    home: Home(),
+    routes: <String, WidgetBuilder>{
+      '/home': (BuildContext context) => new Home(),
+    },
+  ));
 }
 
 class Home extends StatefulWidget {
@@ -38,6 +43,12 @@ class _Home extends State<Home> {
   void closeBubble() {
     if (bubbleOverlay.isOpen) {
       bubbleOverlay.closeBubble();
+    }
+  }
+
+  void closeVideoBubble() {
+    if (bubbleOverlay.isVideoOpen) {
+      bubbleOverlay.closeVideoBubble();
     }
   }
 
@@ -82,12 +93,15 @@ class _Home extends State<Home> {
   void openBubbleVideo() async {
     String url =
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-    bubbleOverlay.openVideoBubble(url);
+    bubbleOverlay.openVideoBubble(url,
+        startTimeInMilliseconds: 15000, controlsType: ControlsType.MINIMAL);
   }
 
   void openBubbleVideoAssets() async {
-    String asset = 'assets/video.mp4';
-    bubbleOverlay.openVideoBubbleAsset(asset);
+    String asset;
+    // asset = 'assets/video.mp4';
+    asset = 'assets/video_vertical.mp4';
+    bubbleOverlay.openVideoBubbleAsset(asset, controlsType: ControlsType.MINIMAL);
   }
 
   @override
@@ -102,10 +116,6 @@ class _Home extends State<Home> {
               RaisedButton(
                   child: Text('Open Bubble Overlay'),
                   onPressed: () => bubbleOverlay.openBubble()),
-              RaisedButton(
-                onPressed: closeBubble,
-                child: Text('Close Bubble'),
-              ),
               RaisedButton(
                 onPressed: setTopText,
                 child: Text('Set Bubble Top Text'),
@@ -137,6 +147,22 @@ class _Home extends State<Home> {
               RaisedButton(
                 child: Text('Open Bubble Video Assets'),
                 onPressed: openBubbleVideoAssets,
+              ),
+              RaisedButton(
+                child: Text('Is Bubble Open'),
+                onPressed: () => print(bubbleOverlay.isOpen),
+              ),
+              RaisedButton(
+                child: Text('Is Video Open'),
+                onPressed: () => print(bubbleOverlay.isVideoOpen),
+              ),
+              RaisedButton(
+                onPressed: closeBubble,
+                child: Text('Close Bubble'),
+              ),
+              RaisedButton(
+                onPressed: closeVideoBubble,
+                child: Text('Close Video Bubble'),
               ),
             ],
           ),

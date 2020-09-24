@@ -1,19 +1,20 @@
 package com.adriankohls.bubble_overlay
 
 import android.app.Activity
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import androidx.annotation.NonNull
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+
 
 /** BubbleOverlayPlugin */
 class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCallHandler {
@@ -27,6 +28,21 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
     private var connectionVideo: ServiceConnection? = null
     private var mBound: Boolean = false
     private var mBoundVideo: Boolean = false
+    private var isCurrentTimeDirty: Boolean = false
+    private var currentTime: Long = -1
+
+    // give data from service
+    private val BReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            //put here whaterver you want your activity to do with the intent received
+            var lastCurrentTime = intent?.getLongExtra("currentTime", -1)
+            Log.d("wooow currentTime:", currentTime.toString())
+            if (lastCurrentTime != currentTime) {
+                currentTime = lastCurrentTime!!
+                isCurrentTimeDirty = true
+            }
+        }
+    }
 
 
     private fun connect(call: MethodCall?) {
@@ -38,7 +54,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                 mBound = true
 
                 if (call != null)
-                    if(call.method == "openBubble"){
+                    if (call.method == "openBubble") {
                         val arguments = call.arguments as List<Any?>
 
                         val title: String? = arguments[0] as String?
@@ -71,7 +87,6 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
             }
 
 
-
             override fun onServiceDisconnected(arg0: ComponentName) {
                 mOverlayService?.stopSelf()
                 mBound = false
@@ -86,17 +101,29 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                 mBoundVideo = true
 
                 if (call != null)
-                    if(call.method == "openVideoBubble"){
+                    if (call.method == "openVideoBubble") {
                         val arguments = call.arguments as List<Any?>
                         val data = arguments[0] as String
+                        val seekAtStart = arguments[1] as Boolean
+                        val startTimeInSeconds = (arguments[2] as Int).toLong()
+                        val controlsType: ControlsType = enumValueOf(arguments[3] as String)
                         val uri = Uri.parse(data)
-                        mOverlayVideoService?.setVideo(uri)
+                        mOverlayVideoService?.setVideo(uri, seekAtStart, startTimeInSeconds, controlsType)
                     }
+
+                // return data to flutter module
+                LocalBroadcastManager.getInstance(activity?.applicationContext!!)
+                        .registerReceiver(BReceiver, IntentFilter("message"))
             }
 
 
-
             override fun onServiceDisconnected(arg0: ComponentName) {
+                val map = mutableMapOf<String, String>()
+                map["isCurrentTimeDirty"] = isCurrentTimeDirty.toString()
+                map["currentTime"] = currentTime.toString()
+
+                channel?.invokeMethod("getCurrentTime", map)
+
                 mOverlayVideoService?.stopSelf()
                 mBoundVideo = false
             }
@@ -117,6 +144,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
         mOverlayService?.stopSelf()
         mBound = false
     }
+
     private fun releaseVideo() {
         if (connectionVideo != null) activity?.unbindService(connectionVideo!!)
         mOverlayVideoService?.stopSelf()
@@ -144,6 +172,7 @@ class BubbleOverlayPlugin : ActivityAware, FlutterPlugin, MethodChannel.MethodCa
                     activity?.startActivityForResult(
                             Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")),
                             CODE_DRAW_OVER_OTHER_APP_PERMISSION)
+                    // TODO restore previous intent visibility
                 } else {
                     activity?.startService(
                             Intent(activity, BubbleVideoOverlayService::class.java))
