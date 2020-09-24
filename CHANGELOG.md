@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4+0
+
+* Check [this merged pull request](https://github.com/KohlsAdrian/bubble_overlay/pull/6) by [0Franky](https://github.com/0Franky)
+
 ## 0.1.3+0
 
 * Removed unused iOS resources and folder

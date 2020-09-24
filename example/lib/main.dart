@@ -101,7 +101,8 @@ class _Home extends State<Home> {
     String asset;
     // asset = 'assets/video.mp4';
     asset = 'assets/video_vertical.mp4';
-    bubbleOverlay.openVideoBubbleAsset(asset, controlsType: ControlsType.MINIMAL);
+    bubbleOverlay.openVideoBubbleAsset(asset,
+        controlsType: ControlsType.MINIMAL);
   }
 
   @override
