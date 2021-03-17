@@ -75,19 +75,15 @@ class _Home extends State<Home> {
   void setTopIcon() async {
     String url =
         'https://meterpreter.org/wp-content/uploads/2018/09/flutter.png';
-    http.get(url).then((response) {
-      if (response != null)
-        bubbleOverlay.updateTopIconWithBytes(response.bodyBytes);
-    });
+    http.get(Uri.parse(url)).then(
+        (response) => bubbleOverlay.updateTopIconWithBytes(response.bodyBytes));
   }
 
   void setBottomIcon() async {
     String url =
         'https://github.githubassets.com/images/modules/open_graph/github-mark.png';
-    http.get(url).then((response) {
-      if (response != null)
-        bubbleOverlay.updateBottomIconWithBytes(response.bodyBytes);
-    });
+    http.get(Uri.parse(url)).then((response) =>
+        bubbleOverlay.updateBottomIconWithBytes(response.bodyBytes));
   }
 
   void openBubbleVideo() async {
@@ -114,54 +110,54 @@ class _Home extends State<Home> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              RaisedButton(
+              ElevatedButton(
                   child: Text('Open Bubble Overlay'),
                   onPressed: () => bubbleOverlay.openBubble()),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: setTopText,
                 child: Text('Set Bubble Top Text'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: setMiddleTextCounter,
                 child: Text('Set Middle Text Counter'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: setBottomTextHelloWorld,
                 child: Text('Set Bottom Text "Hello World"'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: updateTextAndBgColor,
                 child: Text('Update text and background color'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Set Top Icon'),
                 onPressed: setTopIcon,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Set Bottom Icon'),
                 onPressed: setBottomIcon,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Open Bubble Video'),
                 onPressed: openBubbleVideo,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Open Bubble Video Assets'),
                 onPressed: openBubbleVideoAssets,
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Is Bubble Open'),
                 onPressed: () => print(bubbleOverlay.isOpen),
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Is Video Open'),
                 onPressed: () => print(bubbleOverlay.isVideoOpen),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: closeBubble,
                 child: Text('Close Bubble'),
               ),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: closeVideoBubble,
                 child: Text('Close Video Bubble'),
               ),
