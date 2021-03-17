@@ -4,19 +4,15 @@ description: Demonstrates how to use the bubble_overlay plugin.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  http:
+  http: ^0.13.0
   bubble_overlay:
     path: ../
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
+    
 flutter:
   assets:
     - assets/video.mp4

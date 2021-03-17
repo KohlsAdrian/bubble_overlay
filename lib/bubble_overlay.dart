@@ -1,20 +1,21 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart';
 
 class BubbleOverlay {
   bool _isOpen = false;
   bool _isVideoOpen = false;
-  Timer _callback;
-  Timer _timer;
-  Timer _timerVideo;
+  Timer? _callback;
+  Timer? _timer;
+  Timer? _timerVideo;
 
   bool get isOpen => _isOpen;
   bool get isVideoOpen => _isVideoOpen;
-  Timer get callback => _callback;
+  Timer? get callback => _callback;
 
   BubbleOverlay() {
     if (!Platform.isAndroid)
@@ -37,9 +38,9 @@ class BubbleOverlay {
     String middleTextColor = '#000000',
     String bottomTextColor = '#000000',
     String backgroundColor = '#ffffff',
-    String topIconAsset,
-    String bottomIconAsset,
-    Timer callback,
+    String? topIconAsset,
+    String? bottomIconAsset,
+    Timer? callback,
   }) async {
     var bytesTop = topIconAsset == null
         ? null
@@ -64,9 +65,9 @@ class BubbleOverlay {
     ///bubble [isOpen] if Service is bounded, [true] if bounded,
     ///[false] otherwise
     _timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      _isOpen = await _platform?.invokeMethod('isBubbleOpen') ?? false;
+      _isOpen = await _platform.invokeMethod('isBubbleOpen') ?? false;
       if (!_isOpen) {
-        timer?.cancel();
+        timer.cancel();
       }
     });
   }
@@ -77,7 +78,7 @@ class BubbleOverlay {
   /// [controlsType] type of (ui) controls to show on the mini video player (all type avaiable in the enum ControlsType)
   /// [onEndServiceTask] callback to call after end of the service. Useful for setting a new time on the main media player
   void openVideoBubble(String path,
-      {int startTimeInMilliseconds,
+      {int startTimeInMilliseconds = 0,
       ControlsType controlsType = ControlsType.STANDARD,
       onEndServiceTask}) async {
     // To call from native android after service close.
@@ -94,26 +95,21 @@ class BubbleOverlay {
       }
     });
 
-    bool _seekAtStart = startTimeInMilliseconds != null ? true : false;
-    int _startTimeInMilliseconds =
-        startTimeInMilliseconds != null ? startTimeInMilliseconds : 0;
-    ControlsType _controlsType =
-        controlsType != null ? controlsType : ControlsType.STANDARD;
+    bool _seekAtStart = startTimeInMilliseconds == 0 ? true : false;
     _platform.invokeMethod('openVideoBubble', [
       path,
       _seekAtStart,
-      _startTimeInMilliseconds,
-      _controlsType
+      startTimeInMilliseconds,
+      controlsType
           .toString()
-          .substring(_controlsType.toString().lastIndexOf(".") + 1)
+          .substring(controlsType.toString().lastIndexOf(".") + 1)
     ]);
 
     ///Creates [_timerVideo] to check periodically if
     ///bubble [_isVideoOpen] if Service is bounded, [true] if bounded,
     ///[false] otherwise
     _timerVideo = Timer.periodic(Duration(seconds: 1), (timer) async {
-      _isVideoOpen =
-          await _platform?.invokeMethod('isVideoBubbleOpen') ?? false;
+      _isVideoOpen = await _platform.invokeMethod('isVideoBubbleOpen') ?? false;
       if (!_isVideoOpen) {
         _timerVideo?.cancel();
       }
@@ -138,8 +134,8 @@ class BubbleOverlay {
   /// [controlsType] type of (ui) controls to show on the mini video player (all type avaiable in the enum ControlsType)
   /// [onEndServiceTask] callback to call after end of the service. Useful for setting a new time on the main media player
   void openVideoBubbleAsset(String asset,
-      {int startTimeInMilliseconds,
-      ControlsType controlsType,
+      {int startTimeInMilliseconds = 0,
+      ControlsType controlsType = ControlsType.STANDARD,
       onEndServiceTask}) async {
     ByteData data = await rootBundle.load(asset);
     List<int> bytes =
@@ -156,7 +152,7 @@ class BubbleOverlay {
 
   ///Add custom service inside bubble, usually used for
   ///Timer.peridoc automated calls
-  void setCallback(Timer callback) => _callback = callback;
+  void setCallback(Timer? callback) => _callback = callback;
 
   ///Removes custom service inside bubble
   void removeCallback() {
@@ -172,7 +168,7 @@ class BubbleOverlay {
     if (_isOpen) {
       removeCallback();
       _platform.invokeMethod('closeBubble');
-      _timer.cancel();
+      _timer?.cancel();
       _isOpen = false;
     } else
       throw Exception('Bubble not running');
@@ -182,7 +178,7 @@ class BubbleOverlay {
   void closeVideoBubble() {
     if (_isVideoOpen) {
       _platform.invokeMethod('closeVideoBubble');
-      _timerVideo.cancel();
+      _timerVideo?.cancel();
       _isVideoOpen = false;
     } else
       throw Exception('Bubble Video not running');
